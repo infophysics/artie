@@ -28,7 +28,8 @@
 /analysis/h1/set 6  1000  0. 10. us	#time of flight seen by the neutron detector
 /analysis/h1/set 7  1000  0. 1 MeV	#step energy of the primary neutron
 /analysis/h1/set 8  1000  0. 1 MeV	#incident energy of the primary neutron getting into the detector
+/analysis/h2/set 0 1000  0. 1 MeV none linear 1000  0. 10. us none linear #Detected TOF vs Energy 
 #
 /run/printProgress 200
 #
-/run/beamOn 2000
+/run/beamOn 10000

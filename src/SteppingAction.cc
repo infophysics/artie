@@ -95,7 +95,8 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
        G4double time   = aStep->GetTrack()->GetLocalTime();           
        //fTrackingAction->MarkTrackInfo(ekin,trackl,time);
        G4AnalysisManager::Instance()->FillH1(6,time);	  
-       G4AnalysisManager::Instance()->FillH1(8,ekin);	  
+       G4AnalysisManager::Instance()->FillH1(8,ekin);	 
+       G4AnalysisManager::Instance()->FillH2(0,ekin,time);	 
   }
 }
 
