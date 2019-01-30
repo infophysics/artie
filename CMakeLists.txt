@@ -40,10 +40,8 @@ target_link_libraries(Artie ${Geant4_LIBRARIES} )
 # relies on these scripts being in the current working directory.
 #
 set(Artie_SCRIPTS
-    debug.mac
     envHadronic.csh
     envHadronic.sh 
-    graphite.mac 
     run01.mac 
     vis.mac
   )
