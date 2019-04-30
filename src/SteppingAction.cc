@@ -35,6 +35,7 @@
 #include "Run.hh"
 #include "TrackingAction.hh"
 #include "HistoManager.hh"
+#include "Randomize.hh"
 
 #include "G4RunManager.hh"
                            
@@ -59,6 +60,10 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
   const G4ParticleDefinition* particle = aStep->GetTrack()->GetDefinition(); 
   const G4VPhysicalVolume* preStepPhysical = prePoint->GetPhysicalVolume();
   const G4VPhysicalVolume* postStepPhysical = postPoint->GetPhysicalVolume();
+
+  //RNG
+  G4double mu = 1*CLHEP::ns;
+  G4double sigma = 0.1*CLHEP::ns;
   
   // The track does not exist
   if(preStepPhysical == 0 || postStepPhysical == 0) return;
@@ -90,9 +95,10 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
   && postPoint->GetStepStatus() == fGeomBoundary // step crossing bondary
   && preVolume == fDetector->GetLogicWorld() // step prevolume is air
   && endVolume == fDetector->GetLogicDetector()) { // step postvolume is neutron detector) 
+  	   G4double RandGausNum = G4RandGauss::shoot(mu,sigma);
   	   G4double ekin  = postPoint->GetKineticEnergy();
        G4double trackl = aStep->GetTrack()->GetTrackLength();
-       G4double time   = aStep->GetTrack()->GetLocalTime();           
+       G4double time   = aStep->GetTrack()->GetLocalTime() + RandGausNum;           
        //fTrackingAction->MarkTrackInfo(ekin,trackl,time);
        G4AnalysisManager::Instance()->FillH1(6,time);	  
        G4AnalysisManager::Instance()->FillH1(8,ekin);	 

@@ -53,6 +53,8 @@
 #include "G4SystemOfUnits.hh"
 #include "G4VisAttributes.hh"
 
+#include "G4RotationMatrix.hh"
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 DetectorConstruction::DetectorConstruction()
@@ -61,7 +63,7 @@ DetectorConstruction::DetectorConstruction()
 {
   fWorldSizeX = 2*m;
   fWorldSizeY = 2*m;
-  fWorldSizeZ = 30*m;
+  fWorldSizeZ = 140*m;
   DefineMaterials();
   
   // liquid argon target
@@ -80,7 +82,13 @@ DetectorConstruction::DetectorConstruction()
   fGascontainerLength = 160.*cm; 
   fGascontainerRadius = 12.*cm; 
   
-  // kapton window to be defined
+  // kapton window
+  fKaptonThickness = 0.00762*cm;
+
+  //Fill and vent lines
+  fPipeRadius = 2.*cm;
+  fPipeLength = 10.*cm;
+  //PipeRot->rotateY(90.0*deg);
   
   
   // neutron collimator to be defined
@@ -94,7 +102,7 @@ DetectorConstruction::DetectorConstruction()
   // toy neutron detector
   fDetectorLength = 10.*cm;
   fDetectorRadius = 3.*cm;
-  fDetectorPositionZ = -10.*m;
+  fDetectorPositionZ = -70.*m;
   fDetectorMessenger = new DetectorMessenger(this);
 }
 
@@ -183,7 +191,6 @@ void DetectorConstruction::DefineMaterials()
   G4Element* Bi = man->FindOrBuildElement("Bi");
   
 
-  
   // stainless steel
   G4Material* StainlessSteel = new G4Material("StainlessSteel", density= 8.06*g/cm3, ncomponents=6);
       StainlessSteel->AddElement(C, fractionmass=0.015); 
@@ -248,6 +255,9 @@ void DetectorConstruction::DefineMaterials()
   
   // neutron detector
   fDetectorMater = H2O;
+
+  // kapton
+  fkapton  = man->FindOrBuildMaterial("G4_KAPTON");
 
   
  ///G4cout << *(G4Material::GetMaterialTable()) << G4endl;
@@ -368,6 +378,136 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
                                     false,                   
                                     0);                      
   
+  //Kapton Window R1
+  G4Tubs*
+  sKapWinR1 = new G4Tubs("KapWinR1_s", 0, fLArcontainerRadius, 0.5*fKaptonThickness, 0., CLHEP::twopi);
+
+  fLogicKapWinR1 = new G4LogicalVolume(sKapWinR1, fkapton, "KapWinR1_l");
+
+  fPhysiKapWinR1 = new G4PVPlacement(0, 
+  									G4ThreeVector(0,0, fLArcontainerLength*0.5+0.5*fKaptonThickness), 
+  	                                fLogicKapWinR1 ,           
+                                    "KapWinR1_p",              
+                                    fLogicGasinsulator,      
+                                    false,                   
+                                    0);
+
+  //Kapton Window R2
+  G4Tubs*
+  sKapWinR2 = new G4Tubs("KapWinR2_s", 0, fLArcontainerRadius, 0.5*fKaptonThickness, 0., CLHEP::twopi);
+
+  fLogicKapWinR2 = new G4LogicalVolume(sKapWinR2, fkapton, "KapWinR2_l");
+
+  fPhysiKapWinR2 = new G4PVPlacement(0, 
+  									G4ThreeVector(0,0, fGasinsulatorLength*0.5+0.5*fKaptonThickness), 
+  	                                fLogicKapWinR2 ,           
+                                    "KapWinR2_p",              
+                                    fLWorld,      
+                                    false,                   
+                                    0);
+
+  //Kapton Window L1
+  G4Tubs*
+  sKapWinL1 = new G4Tubs("KapWinL1_s", 0, fLArcontainerRadius, 0.5*fKaptonThickness, 0., CLHEP::twopi);
+
+  fLogicKapWinL1 = new G4LogicalVolume(sKapWinL1, fkapton, "KapWinL1_l");
+
+  fPhysiKapWinL1 = new G4PVPlacement(0, 
+  									G4ThreeVector(0,0, -0.5*fLArcontainerLength-0.5*fKaptonThickness), 
+  	                                fLogicKapWinL1 ,           
+                                    "KapWinL1_p",              
+                                    fLogicGasinsulator,      
+                                    false,                   
+                                    0);
+
+  //Kapton Window L2
+  G4Tubs*
+  sKapWinL2 = new G4Tubs("KapWinL2_s", 0, fLArcontainerRadius, 0.5*fKaptonThickness, 0., CLHEP::twopi);
+
+  fLogicKapWinL2 = new G4LogicalVolume(sKapWinL2, fkapton, "KapWinL2_l");
+
+  fPhysiKapWinL2 = new G4PVPlacement(0, 
+  									G4ThreeVector(0,0, -0.5*fGasinsulatorLength-0.5*fKaptonThickness), 
+  	                                fLogicKapWinL2 ,           
+                                    "KapWinL2_p",              
+                                    fLWorld,      
+                                    false,                   
+                                    0);
+
+  G4RotationMatrix* PipeRot = new G4RotationMatrix;
+  PipeRot->rotateY(90.0*deg);
+
+  //lAr fill line In
+  G4Tubs*
+  slArFillLineIN = new G4Tubs("lArFillLineIN_s", 0, fPipeRadius, 0.25*fPipeLength, 0., CLHEP::twopi);
+
+  fLogiclArFillLineIN = new G4LogicalVolume(slArFillLineIN, fGascontainerMater, "lArFillLineIN_l");
+
+  fPhysilArFillLineIN = new G4PVPlacement(PipeRot, 
+  									G4ThreeVector(fLArcontainerRadius+0.25*fPipeLength, 0, 50*cm), 
+  	                                fLogiclArFillLineIN,           
+                                    "lArFillLineIN_p",              
+                                    fLogicGasinsulator,      
+                                    false,                   
+                                    0);
+
+  //lAr fill line Out
+  G4Tubs*
+  slArFillLineOUT = new G4Tubs("lArFillLineOUT_s", 0, fPipeRadius, 0.25*fPipeLength, 0., CLHEP::twopi);
+
+  fLogiclArFillLineOUT = new G4LogicalVolume(slArFillLineOUT, fGascontainerMater, "lArFillLineOUT_l");
+
+  fPhysilArFillLineOUT = new G4PVPlacement(PipeRot, 
+  									G4ThreeVector(fGascontainerRadius + 0.25*fPipeLength, 0, 50*cm), 
+  	                                fLogiclArFillLineOUT ,           
+                                    "lArFillLineOUT_p",              
+                                    fLWorld,      
+                                    false,                   
+                                    0);
+
+
+  //lAr Vent Line IN
+  G4Tubs*
+  slArVentLineIN = new G4Tubs("lArVentLineIN_s", 0, fPipeRadius, 0.25*fPipeLength, 0., CLHEP::twopi);
+
+  fLogiclArVentLineIN = new G4LogicalVolume(slArVentLineIN, fGascontainerMater, "lArVentLineIN_l");
+
+  fPhysilArVentLineIN = new G4PVPlacement(PipeRot, 
+  									G4ThreeVector(fLArcontainerRadius + 0.25*fPipeLength, 0, -50*cm), 
+  	                                fLogiclArVentLineIN ,           
+                                    "lArVentLineIN_p",              
+                                    fLogicGasinsulator,      
+                                    false,                   
+                                    0);
+
+  //lAr Vent Line Out
+  G4Tubs*
+  slArVentLineOUT = new G4Tubs("lArVentLineOUT_s", 0, fPipeRadius, 0.25*fPipeLength, 0., CLHEP::twopi);
+
+  fLogiclArVentLineOUT = new G4LogicalVolume(slArVentLineOUT, fGascontainerMater, "lArVentLineOUT_l");
+
+  fPhysilArVentLineOUT = new G4PVPlacement(PipeRot, 
+  									G4ThreeVector(fGascontainerRadius + 0.25*fPipeLength, 0, -50*cm), 
+  	                                fLogiclArVentLineOUT ,           
+                                    "lArVentLineOUT_p",              
+                                    fLWorld,      
+                                    false,                   
+                                    0);
+
+  //lAr Vacuum Line
+  G4Tubs*
+  sVacuumLine = new G4Tubs("VacuumLine_s", 0, fPipeRadius, 0.25*fPipeLength, 0., CLHEP::twopi);
+
+  fLogicVacuumLine = new G4LogicalVolume(sVacuumLine, fGascontainerMater, "VacuumLine_l");
+
+  fPhysiVacuumLine = new G4PVPlacement(PipeRot, 
+  									G4ThreeVector(-fGascontainerRadius - 0.25*fPipeLength, 0, 0), 
+  	                                fLogicVacuumLine ,           
+                                    "VacuumLine_p",              
+                                    fLWorld,      
+                                    false,                   
+                                    0);
+
   // neutron collimator
   G4Tubs*
   sCollimatorSolid = new G4Tubs("CollimatorSolid",                        
@@ -410,16 +550,21 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
   
   // set VisAttributes
   fLWorld->SetVisAttributes(G4VisAttributes::GetInvisible()); 
-  G4VisAttributes* VisAttGascontainer= new G4VisAttributes(G4Colour(0.0, 1.0, 1.0));
+  G4VisAttributes* VisAttGascontainer= new G4VisAttributes(G4Colour(0.0, 1.0, 1.0)); // cyan
   fLogicGascontainer->SetVisAttributes(VisAttGascontainer);  
-  G4VisAttributes* VisAttGasinsulator= new G4VisAttributes(G4Colour(1.0, 0.0, 1.0));
+  G4VisAttributes* VisAttGasinsulator= new G4VisAttributes(G4Colour(1.0, 0.0, 1.0)); // magenta 
   fLogicGasinsulator->SetVisAttributes(VisAttGasinsulator);  
-  G4VisAttributes* VisAttLArcontainer= new G4VisAttributes(G4Colour(0.0, 1.0, 0.0));
+  G4VisAttributes* VisAttLArcontainer= new G4VisAttributes(G4Colour(0.0, 1.0, 0.0)); // green
   fLogicLArcontainer->SetVisAttributes(VisAttLArcontainer);  
-  G4VisAttributes* VisAttTarget= new G4VisAttributes(G4Colour(0.0, 0.0, 1.0));
+  G4VisAttributes* VisAttTarget= new G4VisAttributes(G4Colour(0.0, 0.0, 1.0)); // blue
   fLogicTarget->SetVisAttributes(VisAttTarget);   
-  G4VisAttributes* VisAttDetector= new G4VisAttributes(G4Colour(1.0, 1.0, 0.0));
-  fLogicDetector->SetVisAttributes(VisAttDetector);                 
+  G4VisAttributes* VisAttDetector= new G4VisAttributes(G4Colour(1.0, 1.0, 0.0)); // yellow
+  fLogicDetector->SetVisAttributes(VisAttDetector);
+  G4VisAttributes* VisAttKapWin= new G4VisAttributes(G4Colour(1.0, 1.0, 0.0)); // yellow
+  fLogicKapWinR1->SetVisAttributes(VisAttKapWin);
+  fLogicKapWinR2->SetVisAttributes(VisAttKapWin);
+  fLogicKapWinL1->SetVisAttributes(VisAttKapWin);
+  fLogicKapWinL2->SetVisAttributes(VisAttKapWin);                 
   
     
   PrintParameters();

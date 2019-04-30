@@ -37,6 +37,7 @@
 
 #include "G4VUserDetectorConstruction.hh"
 #include "globals.hh"
+//#include "G4RotationMatrix.hh"
 
 class G4LogicalVolume;
 class G4Material;
@@ -112,7 +113,42 @@ class DetectorConstruction : public G4VUserDetectorConstruction
      G4VPhysicalVolume* fPhysiTarget;
      G4Material*        fTargetMater; 
      
-     // kapton window to be added
+     // kapton window R1
+     G4double           fKaptonThickness;
+     G4Material*        fkapton;  
+     G4LogicalVolume*   fLogicKapWinR1;
+     G4VPhysicalVolume* fPhysiKapWinR1;
+
+     // kapton window R2 
+     G4LogicalVolume*   fLogicKapWinR2;
+     G4VPhysicalVolume* fPhysiKapWinR2;
+
+     // kapton window L1 
+     G4LogicalVolume*   fLogicKapWinL1;
+     G4VPhysicalVolume* fPhysiKapWinL1;
+
+     // kapton window L2
+     G4LogicalVolume*   fLogicKapWinL2;
+     G4VPhysicalVolume* fPhysiKapWinL2;
+
+     //Fill and vent lines
+     G4double           fPipeRadius;
+     G4double           fPipeLength;
+     //G4RotationMatrix*   PipeRot;
+     //Fill Line
+     G4LogicalVolume*   fLogiclArFillLineIN;
+     G4VPhysicalVolume* fPhysilArFillLineIN;
+     G4LogicalVolume*   fLogiclArFillLineOUT;
+     G4VPhysicalVolume* fPhysilArFillLineOUT;
+     //Vent Line
+     G4LogicalVolume*   fLogiclArVentLineIN;
+     G4VPhysicalVolume* fPhysilArVentLineIN;
+     G4LogicalVolume*   fLogiclArVentLineOUT;
+     G4VPhysicalVolume* fPhysilArVentLineOUT;
+
+     // Vacuum line
+     G4LogicalVolume*   fLogicVacuumLine;
+     G4VPhysicalVolume* fPhysiVacuumLine;
      
      // neutron collimator
      G4double           fCollimatorShieldThickness;
