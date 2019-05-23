@@ -67,19 +67,19 @@ DetectorConstruction::DetectorConstruction()
   DefineMaterials();
   
   // liquid argon target
-  fTargetLength = 150.*cm; 
+  fTargetLength = 200.*cm; 
   fTargetRadius = 2.*cm; 
   
   // liquid argon container
-  fLArcontainerLength = 150.*cm; 
+  fLArcontainerLength = 200.*cm; 
   fLArcontainerRadius = 5.*cm; 
   
   // gas insulator
-  fGasinsulatorLength = 160.*cm; 
+  fGasinsulatorLength = 210.*cm; 
   fGasinsulatorRadius = 10.*cm; 
   
   // gas container
-  fGascontainerLength = 160.*cm; 
+  fGascontainerLength = 210.*cm; 
   fGascontainerRadius = 12.*cm; 
   
   // kapton window
@@ -90,7 +90,7 @@ DetectorConstruction::DetectorConstruction()
   fPipeLength = 10.*cm;
   //PipeRot->rotateY(90.0*deg);
   
-  
+ 
   // neutron collimator to be defined
   fCollimatorShieldThickness = 10.*cm;
   fCollimatorHollowLength = 90.*cm;   
@@ -101,7 +101,7 @@ DetectorConstruction::DetectorConstruction()
   
   // toy neutron detector
   fDetectorLength = 10.*cm;
-  fDetectorRadius = 3.*cm;
+  fDetectorRadius = 6.*cm;
   fDetectorPositionZ = -70.*m;
   fDetectorMessenger = new DetectorMessenger(this);
 }
@@ -374,7 +374,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
                             				G4ThreeVector(),         
                                     fLogicTarget ,           
                                     "Target_p",              
-                                    fLogicLArcontainer,      
+                                    fLogicLArcontainer,    //fLWorld, //  
                                     false,                   
                                     0);                      
   
@@ -507,7 +507,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
                                     fLWorld,      
                                     false,                   
                                     0);
-
+/*
   // neutron collimator
   G4Tubs*
   sCollimatorSolid = new G4Tubs("CollimatorSolid",                        
@@ -530,7 +530,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
                                     fLWorld,      
                                     false,                   
                                     0);                      
-  
+*/ 
   // neutron detector 
   G4Tubs* 
   sDetector = new G4Tubs("Detector_s",                                               

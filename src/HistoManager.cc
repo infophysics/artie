@@ -94,7 +94,7 @@ void HistoManager::Book()
   analysisManager->SetH1Activation(ih, true);
   
   //Histogram 6 - Detected time of flight
-  ih = analysisManager->CreateH1("hTofDetected", "incident neutron: Detected time of flight", nbins, vmin, vmax);
+  ih = analysisManager->CreateH1("hTofDetected", "transmitted neutron: Detected time of flight", nbins, vmin, vmax);
   analysisManager->SetH1Activation(ih, true);
 
   //Histogram 7 - energy distribution for all steps
@@ -102,7 +102,7 @@ void HistoManager::Book()
   analysisManager->SetH1Activation(ih, true);
 
   //Histogram 8 - energy spectrum of neutrons getting into the detector
-  ih = analysisManager->CreateH1("hPrimEnergyDetector", "Energy Spectrum of Primary Neutrons getting into the detector", nbins, vmin, vmax);
+  ih = analysisManager->CreateH1("hPrimEnergyDetector", "Energy Spectrum of transmitted Neutrons getting into the detector", nbins, vmin, vmax);
   analysisManager->SetH1Activation(ih, true);
   
   // 2D histograms
