@@ -70,7 +70,8 @@ class DetectorConstruction : public G4VUserDetectorConstruction
      G4Material*        GetMaterial()   {return fWorldMater;};
      
      const G4LogicalVolume* GetLogicWorld()           {return fLWorld;};   
-     const G4LogicalVolume* GetLogicDetector()        {return fLogicDetector;};   
+     const G4LogicalVolume* GetLogicDetector()        {return fLogicDetector;};  
+     const G4LogicalVolume* GetLogicTarget()        {return fLogicTarget;};    
      
      void               PrintParameters();
                        

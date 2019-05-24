@@ -247,8 +247,8 @@ void DetectorConstruction::DefineMaterials()
   fLArcontainerMater = LiPoly;
   	
   // liquid argon target
-  fTargetMater = man->FindOrBuildMaterial("G4_lAr");
-  //fTargetMater = Vacuum;
+  //fTargetMater = man->FindOrBuildMaterial("G4_lAr");
+  fTargetMater = Vacuum;
   
   // neutron collimator
   fCollimatorMater = LiPoly;

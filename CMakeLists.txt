@@ -42,7 +42,8 @@ target_link_libraries(Artie ${Geant4_LIBRARIES} )
 set(Artie_SCRIPTS
     envHadronic.csh
     envHadronic.sh 
-    run01.mac 
+    run_argon_fill.mac 
+    run_vacuum_fill.mac 
     vis.mac
   )
 

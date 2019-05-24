@@ -105,6 +105,10 @@ void HistoManager::Book()
   ih = analysisManager->CreateH1("hPrimEnergyDetector", "Energy Spectrum of transmitted Neutrons getting into the detector", nbins, vmin, vmax);
   analysisManager->SetH1Activation(ih, true);
   
+  //Histogram 9 - energy spectrum of incident beam neutrons
+  ih = analysisManager->CreateH1("hPrimEnergyBeam", "Energy Spectrum of beam Neutrons", nbins, vmin, vmax);
+  analysisManager->SetH1Activation(ih, true);
+  
   // 2D histograms
   ih = analysisManager->CreateH2("hTof_vs_energy","Detected TOF vs Energy ",nbins,vmin,vmax, nbins,vmin,vmax);
   analysisManager->SetH2Activation(ih, true);
