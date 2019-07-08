@@ -36,6 +36,7 @@
 #include "TrackingAction.hh"
 #include "HistoManager.hh"
 #include "Randomize.hh"
+#include "DetectorConstruction.hh"
 
 #include "G4RunManager.hh"
                            
@@ -89,7 +90,25 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
     fTrackingAction->UpdateTrackInfo(ekin,trackl,time);
     G4AnalysisManager::Instance()->FillH1(7,ekin);	  
   }
-  
+/*
+  if (aStep->GetTrack()->GetTrackID() == 1
+  && aStep->GetTrack()->GetDefinition()->GetParticleName() == "neutron"
+  && postPoint->GetStepStatus() == fGeomBoundary // step crossing bondary
+  && preVolume == fDetector->GetLogicTarget() // step prevolume is LAr target
+  && endVolume == fDetector->GetLogicLArcontainer()) { // step postvolume is LAr container
+    G4double KinEOut = postPoint->GetKineticEnergy();
+    G4AnalysisManager::Instance()->FillH1(10,KinEOut);  
+  }
+
+  if (aStep->GetTrack()->GetTrackID() == 1
+  && aStep->GetTrack()->GetDefinition()->GetParticleName() == "neutron"
+  && postPoint->GetStepStatus() == fGeomBoundary // step crossing bondary
+  && preVolume == fDetector->GetLogicLArcontainer() // step prevolume is LAr container
+  && endVolume == fDetector->GetLogicTarget()) { // step postvolume is LAr target 
+    G4double KinEIn = postPoint->GetKineticEnergy();
+    G4AnalysisManager::Instance()->FillH1(11,KinEIn);  
+  }
+*/  
   if (aStep->GetTrack()->GetTrackID() == 1
   && aStep->GetTrack()->GetDefinition()->GetParticleName() == "neutron"
   && postPoint->GetStepStatus() == fGeomBoundary // step crossing bondary
@@ -104,8 +123,8 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
        G4AnalysisManager::Instance()->FillH1(8,ekin);	 
        G4AnalysisManager::Instance()->FillH2(0,ekin,time);	 
   }
-}
 
+}
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 

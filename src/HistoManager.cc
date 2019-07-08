@@ -108,7 +108,15 @@ void HistoManager::Book()
   //Histogram 9 - energy spectrum of incident beam neutrons
   ih = analysisManager->CreateH1("hPrimEnergyBeam", "Energy Spectrum of beam Neutrons", nbins, vmin, vmax);
   analysisManager->SetH1Activation(ih, true);
-  
+
+  //Histogram 10 - Scattering in the liquid argon target
+  ih = analysisManager->CreateH1("hEnergyScatteringOut", "Energy of the Neutrons scattering out of the LAr Target in to the LAr container", nbins, vmin, vmax);
+  analysisManager->SetH1Activation(ih, true);
+
+  //Histogram 11 - Scattering in the liquid argon target
+  ih = analysisManager->CreateH1("hEnergyScatteringIn", "Energy of the Neutrons scattering in to the LAr Target from the LAr container", nbins, vmin, vmax);
+  analysisManager->SetH1Activation(ih, true);
+
   // 2D histograms
   ih = analysisManager->CreateH2("hTof_vs_energy","Detected TOF vs Energy ",nbins,vmin,vmax, nbins,vmin,vmax);
   analysisManager->SetH2Activation(ih, true);

@@ -71,7 +71,8 @@ class DetectorConstruction : public G4VUserDetectorConstruction
      
      const G4LogicalVolume* GetLogicWorld()           {return fLWorld;};   
      const G4LogicalVolume* GetLogicDetector()        {return fLogicDetector;};  
-     const G4LogicalVolume* GetLogicTarget()        {return fLogicTarget;};    
+     const G4LogicalVolume* GetLogicTarget()        {return fLogicTarget;};
+     const G4LogicalVolume* GetLogicLArcontainer()        {return fLogicLArcontainer;};    
      
      void               PrintParameters();
                        
@@ -91,6 +92,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
      G4double           fGascontainerRadius; 
      G4LogicalVolume*   fLogicGascontainer;
      G4VPhysicalVolume* fPhysiGascontainer;
+     //G4Element*         fGascontainerMater;
      G4Material*        fGascontainerMater; 
      
      // gas insulator
@@ -150,6 +152,22 @@ class DetectorConstruction : public G4VUserDetectorConstruction
      // Vacuum line
      G4LogicalVolume*   fLogicVacuumLine;
      G4VPhysicalVolume* fPhysiVacuumLine;
+
+     //Beam Line
+     //G4double           fBeamLineRadius;
+     G4double           fBeamLineLength;
+     G4LogicalVolume*   fLogicBeamLine;
+     G4VPhysicalVolume* fPhysiBeamLine;
+     G4Material*        fBeamLineMater;
+
+     //Beam Line Volume
+     G4double           fBeamLineRadiusOUT;
+     G4double           fBeamLineRadiusIN;
+     G4LogicalVolume*   fLogicBeamLineV;
+     G4VPhysicalVolume* fPhysiBeamLineV;
+     G4Material*        fBeamLineVolumeMater;
+
+
      
      // neutron collimator
      G4double           fCollimatorShieldThickness;
