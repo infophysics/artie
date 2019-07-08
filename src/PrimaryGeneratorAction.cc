@@ -44,6 +44,10 @@
 #include "Randomize.hh"
 #include "HistoManager.hh"
 
+//#include <TFile.h>
+
+//TFile f("xYash.root");
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 PrimaryGeneratorAction::PrimaryGeneratorAction()
@@ -84,11 +88,13 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 //           uy = sinTheta*std::sin(phi),
 //           uz = cosTheta;
 
+  //fRootFile = new TFile("xYash.root");
+
   fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0., 0., -1.));
   fParticleGun->SetParticlePosition(G4ThreeVector(0.*cm,0.*cm,150.*cm));
 //  fParticleGun->SetParticleEnergy(57*keV);
-//  G4double e = 57 *keV;//100*G4UniformRand()*keV; //
-  G4double e = (40+30*G4UniformRand())*keV; //
+  //G4double e = 57*keV;//100*G4UniformRand()*keV; //
+  G4double e = (40+50*G4UniformRand())*keV; //
   fParticleGun->SetParticleEnergy(e);
   fParticleGun->GeneratePrimaryVertex(anEvent);
   G4AnalysisManager::Instance()->FillH1(9,e);

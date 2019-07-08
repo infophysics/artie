@@ -2,6 +2,7 @@
 # Setup the project
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(Artie)
+set(useROOT true) ###
 
 #----------------------------------------------------------------------------
 # Find Geant4 package, activating all available UI and Vis drivers by default
@@ -21,17 +22,34 @@ endif()
 include(${Geant4_USE_FILE})
 
 #----------------------------------------------------------------------------
+# Find ROOT (required package)
+#
+find_package(ROOT REQUIRED)
+
+#----------------------------------------------------------------------------
 # Locate sources and headers for this project
 #
 include_directories(${PROJECT_SOURCE_DIR}/include 
                     ${Geant4_INCLUDE_DIR})
 file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
+###
+if(useROOT)
+    EXECUTE_PROCESS(COMMAND root-config --cflags OUTPUT_VARIABLE ROOT_CXX_FLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ROOT_CXX_FLAGS}")
+endif(useROOT) 
+###
 
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
 #
 add_executable(Artie Artie.cc ${sources} ${headers})
+###
+if(useROOT)
+    EXECUTE_PROCESS(COMMAND root-config --libs OUTPUT_VARIABLE ROOT_LD_FLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
+    set(CMAKE_EXE_LINKER_FLAGS ${ROOT_LD_FLAGS})
+endif(useROOT)
+###
 target_link_libraries(Artie ${Geant4_LIBRARIES} )
 
 #----------------------------------------------------------------------------
