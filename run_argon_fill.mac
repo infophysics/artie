@@ -28,6 +28,7 @@
 /analysis/h1/set 5  100  0. 1000. us	#time of flight <1eV
 /analysis/h1/set 6  1000  0. 100. us	#time of flight seen by the neutron detector
 /analysis/h1/set 7  1000  0. 1 MeV	#step energy of the primary neutron
+
 /analysis/h1/set 8  1000  0.04 0.09 MeV	#energy of the transmitted neutron getting into the detector
 /analysis/h1/set 9  1000  0.04 0.09 MeV	#energy of the beam neutron
 # /analysis/h1/set 10  1000 0. 0.1 MeV #Energy of the Neutrons scattering out of the LAr Target 

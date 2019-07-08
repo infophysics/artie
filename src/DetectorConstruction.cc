@@ -209,18 +209,6 @@ void DetectorConstruction::DefineMaterials()
   G4Material* Aluminium = new G4Material("Aluminiun", density= 2.7*g/cm3, ncomponents=1);
       Aluminium->AddElement(Al, fractionmass=1);
 	
-  // MgF2
-  G4Material* MgF2 = new G4Material("MgF2", 3.15*g/cm3, ncomponents=2, kStateSolid);
-      MgF2->AddElement(Mg, natoms=1);
-      MgF2->AddElement(F, natoms=2);
-
-  
-  // TiF3
-  G4Material* TiF3 = new G4Material("TiF3", 3.4*g/cm3, ncomponents=2, kStateSolid);
-      TiF3->AddElement(Ti, natoms=1);
-      TiF3->AddElement(F, natoms=3);
-
-	
   // Fe-56 isotope
   G4Isotope* iso_Fe = new G4Isotope("iso_Fe", Z=26, A=56, a=55.9349363*g/mole);
   G4Element* ele_Fe = new G4Element("ele_Fe", "Fe", ncomponents=1);
@@ -246,13 +234,13 @@ void DetectorConstruction::DefineMaterials()
   fWorldMater = Air20;//Vacuum;
   
   // gas container
-  fGascontainerMater = StainlessSteel; //Aluminium; //
+  fGascontainerMater = StainlessSteel; //Aluminium; 
   
   // gas insulator
-  fGasinsulatorMater = Air20;
+  fGasinsulatorMater = Vacuum;
   
   // LAr container
-  fLArcontainerMater = StainlessSteel; //Aluminium; //LiPoly;
+  fLArcontainerMater = StainlessSteel;
   	
   // liquid argon target
   fTargetMater = man->FindOrBuildMaterial("G4_lAr");
@@ -543,7 +531,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
   fLogicBeamLineV = new G4LogicalVolume(sBeamLineV, fBeamLineVolumeMater, "BeamLineV_l");
 
   fPhysiBeamLineV = new G4PVPlacement(0, 
-                                    G4ThreeVector(),//-0.5*fGascontainerLength-0.5*fBeamLineLength), 
+                    G4ThreeVector(0, 0, 0), 
                                     fLogicBeamLineV ,           
                                     "BeamLineV_p",              
                                     fLogicBeamLine,      
@@ -564,7 +552,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
   
   fLogicCollimator = new G4LogicalVolume(sCollimator,                                    
                                       fCollimatorMater,                              
-                                      "sCollimator_l");           
+                                      "sCollimator_l");           s
 
   fPhysiCollimator = new G4PVPlacement(0,                        
                             				G4ThreeVector(0., 0., fDetectorPositionZ - fDetectorLength/2 - fCollimatorShieldThickness + fCollimatorSolidLength/2),         
@@ -611,7 +599,6 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
 
   G4VisAttributes* VisAttBeamLineV= new G4VisAttributes(G4Colour(1.0,0.0,0.0)); // red
   fLogicBeamLineV->SetVisAttributes(VisAttBeamLineV);          
-  
     
   PrintParameters();
   
