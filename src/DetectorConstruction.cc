@@ -243,7 +243,7 @@ void DetectorConstruction::DefineMaterials()
     LiPoly->AddMaterial (polyethylene, 92.46*perCent);
   	
   // world mater
-  fWorldMater = Vacuum;
+  fWorldMater = Air20;//Vacuum;
   
   // gas container
   fGascontainerMater = StainlessSteel; //Aluminium; //
@@ -268,7 +268,7 @@ void DetectorConstruction::DefineMaterials()
   fkapton  = man->FindOrBuildMaterial("G4_KAPTON");
 
   //Beam Line
-  fBeamLineMater = Vacuum;//StainlessSteel;
+  fBeamLineMater = StainlessSteel;
 
   //Beam Line Volume
   fBeamLineVolumeMater = Vacuum;
@@ -450,7 +450,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
 
   G4RotationMatrix* PipeRot = new G4RotationMatrix;
   PipeRot->rotateY(90.0*deg);
-
+/*
   //lAr fill line In
   G4Tubs*
   slArFillLineIN = new G4Tubs("lArFillLineIN_s", 0, fPipeRadius, 0.25*fPipeLength, 0., CLHEP::twopi);
@@ -521,7 +521,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
                                     fLWorld,      
                                     false,                   
                                     0);
-/*
+*/
   //Beam line
   G4Tubs*
   sBeamLine = new G4Tubs("BeamLine_s", 0, fBeamLineRadiusOUT, 0.5*fBeamLineLength, 0., CLHEP::twopi);
@@ -543,13 +543,13 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
   fLogicBeamLineV = new G4LogicalVolume(sBeamLineV, fBeamLineVolumeMater, "BeamLineV_l");
 
   fPhysiBeamLineV = new G4PVPlacement(0, 
-                    G4ThreeVector(0, 0, -0.5*fGascontainerLength-0.5*fBeamLineLength), 
+                                    G4ThreeVector(),//-0.5*fGascontainerLength-0.5*fBeamLineLength), 
                                     fLogicBeamLineV ,           
                                     "BeamLineV_p",              
                                     fLogicBeamLine,      
                                     false,                   
                                     0);
-*/
+
 /*
   // neutron collimator
   G4Tubs*
@@ -607,7 +607,10 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
   fLogicKapWinR1->SetVisAttributes(VisAttKapWin);
   fLogicKapWinR2->SetVisAttributes(VisAttKapWin);
   fLogicKapWinL1->SetVisAttributes(VisAttKapWin);
-  fLogicKapWinL2->SetVisAttributes(VisAttKapWin);                 
+  fLogicKapWinL2->SetVisAttributes(VisAttKapWin);
+
+  G4VisAttributes* VisAttBeamLineV= new G4VisAttributes(G4Colour(1.0,0.0,0.0)); // red
+  fLogicBeamLineV->SetVisAttributes(VisAttBeamLineV);          
   
     
   PrintParameters();

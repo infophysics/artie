@@ -72,7 +72,8 @@ class DetectorConstruction : public G4VUserDetectorConstruction
      const G4LogicalVolume* GetLogicWorld()           {return fLWorld;};   
      const G4LogicalVolume* GetLogicDetector()        {return fLogicDetector;};  
      const G4LogicalVolume* GetLogicTarget()        {return fLogicTarget;};
-     const G4LogicalVolume* GetLogicLArcontainer()        {return fLogicLArcontainer;};    
+     const G4LogicalVolume* GetLogicLArcontainer()        {return fLogicLArcontainer;}; 
+     const G4LogicalVolume* GetLogicBeamLineV()     {return fLogicBeamLineV;};   
      
      void               PrintParameters();
                        

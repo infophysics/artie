@@ -112,7 +112,7 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
   if (aStep->GetTrack()->GetTrackID() == 1
   && aStep->GetTrack()->GetDefinition()->GetParticleName() == "neutron"
   && postPoint->GetStepStatus() == fGeomBoundary // step crossing bondary
-  && preVolume == fDetector->GetLogicWorld() // step prevolume is air
+  && preVolume == fDetector->GetLogicBeamLineV() // step prevolume is beam line volume
   && endVolume == fDetector->GetLogicDetector()) { // step postvolume is neutron detector) 
   	   G4double RandGausNum = G4RandGauss::shoot(mu,sigma);
   	   G4double ekin  = postPoint->GetKineticEnergy();
