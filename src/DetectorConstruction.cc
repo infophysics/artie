@@ -199,19 +199,6 @@ void DetectorConstruction::DefineMaterials()
       StainlessSteel->AddElement(Mn, fractionmass=0.01);
       StainlessSteel->AddElement(Fe, fractionmass=0.697);
       StainlessSteel->AddElement(Ni, fractionmass=0.09);
-
-	
-  // MgF2
-  G4Material* MgF2 = new G4Material("MgF2", 3.15*g/cm3, ncomponents=2, kStateSolid);
-      MgF2->AddElement(Mg, natoms=1);
-      MgF2->AddElement(F, natoms=2);
-
-  
-  // TiF3
-  G4Material* TiF3 = new G4Material("TiF3", 3.4*g/cm3, ncomponents=2, kStateSolid);
-      TiF3->AddElement(Ti, natoms=1);
-      TiF3->AddElement(F, natoms=3);
-
 	
   // Fe-56 isotope
   G4Isotope* iso_Fe = new G4Isotope("iso_Fe", Z=26, A=56, a=55.9349363*g/mole);
@@ -235,20 +222,21 @@ void DetectorConstruction::DefineMaterials()
     LiPoly->AddMaterial (polyethylene, 92.46*perCent);
   	
   // world mater
-  fWorldMater = Air20;
+  //fWorldMater = Air20;
+  fWorldMater = Vacuum; 
   
   // gas container
   fGascontainerMater = StainlessSteel;
   
   // gas insulator
-  fGasinsulatorMater = Air20;
+  fGasinsulatorMater = Vacuum;
   
   // LAr container
-  fLArcontainerMater = LiPoly;
+  fLArcontainerMater = StainlessSteel;
   	
   // liquid argon target
-  //fTargetMater = man->FindOrBuildMaterial("G4_lAr");
-  fTargetMater = Vacuum;
+  fTargetMater = man->FindOrBuildMaterial("G4_lAr");
+  //fTargetMater = Vacuum;
   
   // neutron collimator
   fCollimatorMater = LiPoly;
