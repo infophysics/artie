@@ -1,15 +1,7 @@
-# $Id: GNUmakefile 67909 2013-03-12 18:51:09Z vnivanch $
-# --------------------------------------------------------------
-# GNUmakefile for examples module.  Gabriele Cosmo, 06/04/98.
-# --------------------------------------------------------------
 
-name := Hadr04
+name := Artie
 G4TARGET := $(name)
 G4EXLIB := true
-
-ifndef G4INSTALL
-  G4INSTALL = ../../../..
-endif
 
 .PHONY: all
 all: lib bin
