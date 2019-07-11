@@ -23,40 +23,48 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file SteppingAction.hh
-/// \brief Definition of the SteppingAction class
+/// \file EventAction.hh
+/// \brief Definition of the EventAction class
 //
-// $Id: SteppingAction.hh 66241 2012-12-13 18:34:42Z gunter $
-//
+// 
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef SteppingAction_h
-#define SteppingAction_h 1
+#ifndef EventAction_h
+#define EventAction_h 1
 
-#include "G4UserSteppingAction.hh"
-#include "DetectorConstruction.hh"
-#include "EventAction.hh"
+#include "G4UserEventAction.hh"
 #include "globals.hh"
 
-class TrackingAction;
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class SteppingAction : public G4UserSteppingAction
+class EventAction : public G4UserEventAction
 {
   public:
-    SteppingAction(DetectorConstruction* det, TrackingAction*, EventAction*);
-   ~SteppingAction();
+    EventAction();
+   ~EventAction();
 
-    virtual void UserSteppingAction(const G4Step*);
+  public:
+    virtual void BeginOfEventAction(const G4Event*);
+    virtual void   EndOfEventAction(const G4Event*);
+
+    void AddStrayNeutronCounter() {fStrayNeutronCounter++;};
     
-  private:
-    TrackingAction* fTrackingAction; 
-    EventAction* fEventAction;
-    DetectorConstruction* fDetector;     
+    //void AddNeutronEnter_Moderator1() {fNNeutronEnter_Moderator1++;};
+
+    G4int GetStrayNeutronCounter() {return fStrayNeutronCounter;};
+    
+    //G4int GetNNeutronEnter_Moderator1() {return fNNeutronEnter_Moderator1;};
+     
+  private:    
+
+    G4double                fStrayNeutronCounter;
+
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif
+
+    

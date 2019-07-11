@@ -83,8 +83,7 @@ DetectorConstruction::DetectorConstruction()
   fGascontainerRadius = 12.*cm; 
   
   // kapton window
-  fKaptonThickness = 0.00762*cm;
-
+  fKaptonThickness = 0.00762*cm; //
   //Fill and vent lines
   fPipeRadius = 2.*cm;
   fPipeLength = 10.*cm;
@@ -240,7 +239,7 @@ void DetectorConstruction::DefineMaterials()
   fGasinsulatorMater = Vacuum;
   
   // LAr container
-  fLArcontainerMater = StainlessSteel;
+  fLArcontainerMater = StainlessSteel; //Aluminium; //
   	
   // liquid argon target
   fTargetMater = man->FindOrBuildMaterial("G4_lAr");

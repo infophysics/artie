@@ -117,6 +117,10 @@ void HistoManager::Book()
   ih = analysisManager->CreateH1("hEnergyScatteringIn", "Energy of the Neutrons scattering in to the LAr Target from the LAr container", nbins, vmin, vmax);
   analysisManager->SetH1Activation(ih, true);
 
+  //Histogram 12 - Neutrons scattering and entering the detector
+  ih = analysisManager->CreateH1("hEnergyStrayNeutrons", "Energy of the Stray Neutrons", nbins, vmin, vmax);
+  analysisManager->SetH1Activation(ih, true);
+
   // 2D histograms
   ih = analysisManager->CreateH2("hTof_vs_energy","Detected TOF vs Energy ",nbins,vmin,vmax, nbins,vmin,vmax);
   analysisManager->SetH2Activation(ih, true);

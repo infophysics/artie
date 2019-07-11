@@ -37,13 +37,14 @@
 #include "HistoManager.hh"
 #include "Randomize.hh"
 #include "DetectorConstruction.hh"
+#include "EventAction.hh"
 
 #include "G4RunManager.hh"
                            
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-SteppingAction::SteppingAction(DetectorConstruction* det, TrackingAction* TrAct)
-: G4UserSteppingAction(), fDetector(det), fTrackingAction(TrAct)
+SteppingAction::SteppingAction(DetectorConstruction* det, TrackingAction* TrAct, EventAction* event)
+: G4UserSteppingAction(), fDetector(det), fTrackingAction(TrAct), fEventAction(event)
 { }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -108,20 +109,34 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
     G4double KinEIn = postPoint->GetKineticEnergy();
     G4AnalysisManager::Instance()->FillH1(11,KinEIn);  
   }
-*/  
+*/ 
+
+  if (aStep->GetTrack()->GetTrackID() == 1
+  && aStep->GetTrack()->GetDefinition()->GetParticleName() == "neutron"
+  && postPoint->GetStepStatus() == fGeomBoundary // step crossing bondary
+  && preVolume == fDetector->GetLogicTarget() // step prevolume is LAr target
+  && endVolume == fDetector->GetLogicLArcontainer()) { // step postvolume is LAr container
+    fEventAction->AddStrayNeutronCounter();  // Adding to the counter
+  }
+
   if (aStep->GetTrack()->GetTrackID() == 1
   && aStep->GetTrack()->GetDefinition()->GetParticleName() == "neutron"
   && postPoint->GetStepStatus() == fGeomBoundary // step crossing bondary
   && preVolume == fDetector->GetLogicBeamLineV() // step prevolume is beam line volume
-  && endVolume == fDetector->GetLogicDetector()) { // step postvolume is neutron detector) 
+  && endVolume == fDetector->GetLogicDetector()){ // step postvolume is neutron detector) 
+    
   	   G4double RandGausNum = G4RandGauss::shoot(mu,sigma);
   	   G4double ekin  = postPoint->GetKineticEnergy();
        G4double trackl = aStep->GetTrack()->GetTrackLength();
        G4double time   = aStep->GetTrack()->GetLocalTime() + RandGausNum;           
        //fTrackingAction->MarkTrackInfo(ekin,trackl,time);
+    if(fEventAction->GetStrayNeutronCounter() == 0) { //including only those neutrons which didn't scatter out of the target
        G4AnalysisManager::Instance()->FillH1(6,time);	  
        G4AnalysisManager::Instance()->FillH1(8,ekin);	 
-       G4AnalysisManager::Instance()->FillH2(0,ekin,time);	 
+       G4AnalysisManager::Instance()->FillH2(0,ekin,time);
+    } else {
+      G4AnalysisManager::Instance()->FillH1(12,ekin);
+    }	 
   }
 
 }

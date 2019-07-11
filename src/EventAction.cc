@@ -23,40 +23,52 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file SteppingAction.hh
-/// \brief Definition of the SteppingAction class
+/// \file EventAction.cc
+/// \brief Implementation of the EventAction class
 //
-// $Id: SteppingAction.hh 66241 2012-12-13 18:34:42Z gunter $
+// $Id: EventAction.cc 76293 2013-11-08 13:11:23Z gcosmo $
 //
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef SteppingAction_h
-#define SteppingAction_h 1
-
-#include "G4UserSteppingAction.hh"
-#include "DetectorConstruction.hh"
 #include "EventAction.hh"
-#include "globals.hh"
 
-class TrackingAction;
+#include "Run.hh"
+#include "HistoManager.hh"
+
+#include "G4Event.hh"
+#include "G4RunManager.hh"
+#include "G4SystemOfUnits.hh"
+#include "G4UnitsTable.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class SteppingAction : public G4UserSteppingAction
+EventAction::EventAction()
+:G4UserEventAction()
+{  
+                            
+} 
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+EventAction::~EventAction()
+{ }
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void EventAction::BeginOfEventAction(const G4Event*)
 {
-  public:
-    SteppingAction(DetectorConstruction* det, TrackingAction*, EventAction*);
-   ~SteppingAction();
-
-    virtual void UserSteppingAction(const G4Step*);
-    
-  private:
-    TrackingAction* fTrackingAction; 
-    EventAction* fEventAction;
-    DetectorConstruction* fDetector;     
-};
+  fStrayNeutronCounter = 0;
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#endif
+void EventAction::EndOfEventAction(const G4Event* evt)
+{
+//----------------------------------------------------------------- 
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+
