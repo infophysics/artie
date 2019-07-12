@@ -100,11 +100,11 @@ DetectorConstruction::DetectorConstruction()
   // toy neutron detector
   fDetectorLength = 10.*cm;
   fDetectorRadius = 6.*cm;
-  fDetectorPositionZ = -70.*m;
+  fDetectorPositionZ = 70.*m;
   fDetectorMessenger = new DetectorMessenger(this);
 
   //Beam Line
-  fBeamLineLength = - fDetectorPositionZ - 0.5*fDetectorLength - 0.5*fGascontainerLength;  
+  fBeamLineLength = fDetectorPositionZ - 0.5*fDetectorLength - 0.5*fGascontainerLength - 0.5*fKaptonThickness;  
   fBeamLineRadiusOUT = 20.*cm;
   fBeamLineRadiusIN = 18.*cm;
 
@@ -386,7 +386,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
   fLogicKapWinR1 = new G4LogicalVolume(sKapWinR1, fkapton, "KapWinR1_l");
 
   fPhysiKapWinR1 = new G4PVPlacement(0, 
-  									G4ThreeVector(0,0, fLArcontainerLength*0.5+0.5*fKaptonThickness), 
+  									G4ThreeVector(0,0, -fLArcontainerLength*0.5-0.5*fKaptonThickness), 
   	                                fLogicKapWinR1 ,           
                                     "KapWinR1_p",              
                                     fLogicGasinsulator,      
@@ -400,7 +400,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
   fLogicKapWinR2 = new G4LogicalVolume(sKapWinR2, fkapton, "KapWinR2_l");
 
   fPhysiKapWinR2 = new G4PVPlacement(0, 
-  									G4ThreeVector(0,0, fGasinsulatorLength*0.5+0.5*fKaptonThickness), 
+  									G4ThreeVector(0,0, -fGasinsulatorLength*0.5-0.5*fKaptonThickness), 
   	                                fLogicKapWinR2 ,           
                                     "KapWinR2_p",              
                                     fLWorld,      
@@ -414,7 +414,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
   fLogicKapWinL1 = new G4LogicalVolume(sKapWinL1, fkapton, "KapWinL1_l");
 
   fPhysiKapWinL1 = new G4PVPlacement(0, 
-  									G4ThreeVector(0,0, -0.5*fLArcontainerLength-0.5*fKaptonThickness), 
+  									G4ThreeVector(0,0, +0.5*fLArcontainerLength+0.5*fKaptonThickness), 
   	                                fLogicKapWinL1 ,           
                                     "KapWinL1_p",              
                                     fLogicGasinsulator,      
@@ -428,7 +428,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
   fLogicKapWinL2 = new G4LogicalVolume(sKapWinL2, fkapton, "KapWinL2_l");
 
   fPhysiKapWinL2 = new G4PVPlacement(0, 
-  									G4ThreeVector(0,0, -0.5*fGasinsulatorLength-0.5*fKaptonThickness), 
+  									G4ThreeVector(0,0, +0.5*fGasinsulatorLength+0.5*fKaptonThickness), 
   	                                fLogicKapWinL2 ,           
                                     "KapWinL2_p",              
                                     fLWorld,      
@@ -516,7 +516,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
   fLogicBeamLine = new G4LogicalVolume(sBeamLine, fBeamLineMater, "BeamLine_l");
 
   fPhysiBeamLine = new G4PVPlacement(0, 
-                    G4ThreeVector(0, 0, -0.5*fGascontainerLength-0.5*fBeamLineLength), 
+                    G4ThreeVector(0, 0, 0.5*fGascontainerLength+0.5*fBeamLineLength+fKaptonThickness), 
                                     fLogicBeamLine ,           
                                     "BeamLine_p",              
                                     fLWorld,      
