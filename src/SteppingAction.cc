@@ -64,8 +64,8 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
   const G4VPhysicalVolume* postStepPhysical = postPoint->GetPhysicalVolume();
 
   //RNG
-  G4double mu = 1*CLHEP::ns;
-  G4double sigma = 0.1*CLHEP::ns;
+  G4double mu = 0.*CLHEP::ns;
+  G4double sigma = 1.0*CLHEP::ns;
   
   // The track does not exist
   if(preStepPhysical == 0 || postStepPhysical == 0) return;
@@ -118,12 +118,14 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
   && endVolume == fDetector->GetLogicLArcontainer()) { // step postvolume is LAr container
     fEventAction->AddStrayNeutronCounter();  // Adding to the counter
   }
-
-  if (aStep->GetTrack()->GetTrackID() == 1
-  && aStep->GetTrack()->GetDefinition()->GetParticleName() == "neutron"
+  
+  
+  // Neutron Detected
+  if ( aStep->GetTrack()->GetDefinition()->GetParticleName() == "neutron"
   && postPoint->GetStepStatus() == fGeomBoundary // step crossing bondary
   && preVolume == fDetector->GetLogicBeamLineV() // step prevolume is beam line volume
-  && endVolume == fDetector->GetLogicDetector()){ // step postvolume is neutron detector) 
+  && endVolume == fDetector->GetLogicDetector()
+  ){ // step postvolume is neutron detector) 
     
   	   G4double RandGausNum = G4RandGauss::shoot(mu,sigma);
   	   G4double ekin  = postPoint->GetKineticEnergy();

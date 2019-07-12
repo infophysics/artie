@@ -60,11 +60,13 @@ StackingAction::ClassifyNewTrack(const G4Track* aTrack)
   G4String name   = aTrack->GetDefinition()->GetParticleName();
   G4double energy = aTrack->GetKineticEnergy();
   Run* run = static_cast<Run*>(
-        G4RunManager::GetRunManager()->GetNonConstCurrentRun());    
+        G4RunManager::GetRunManager()->GetNonConstCurrentRun());
   run->ParticleCount(name,energy);
 
   //kill all secondaries  
-  return fKill;
+  //return fKill;
+  if(name == "neutron") return fWaiting;
+  else return fKill;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
