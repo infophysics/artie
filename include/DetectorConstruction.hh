@@ -79,6 +79,12 @@ class DetectorConstruction : public G4VUserDetectorConstruction
                        
   private:
   
+     // inch to cm
+     G4double           fInch2cm = 2.54;
+     
+     // Vacuum
+     G4Material* fVacuum;
+     
      // world 
      G4VPhysicalVolume* fPWorld;
      G4LogicalVolume*   fLWorld;
@@ -88,24 +94,27 @@ class DetectorConstruction : public G4VUserDetectorConstruction
      G4Material*        fWorldMater;   
     
      
-     // gas container
-     G4double           fGascontainerLength; 
-     G4double           fGascontainerRadius; 
-     G4LogicalVolume*   fLogicGascontainer;
-     G4VPhysicalVolume* fPhysiGascontainer;
-     //G4Element*         fGascontainerMater;
-     G4Material*        fGascontainerMater; 
+     // Insulator container
+     G4double           fInsulatorContainerLength; 
+     G4double           fInsulatorContainerInnerRadius; 
+     G4double           fInsulatorContainerOuterRadius; 
+     G4LogicalVolume*   fLogicInsulatorContainer;
+     G4VPhysicalVolume* fPhysiInsulatorContainer;
+     //G4Element*         fInsulatorContainerMater;
+     G4Material*        fInsulatorContainerMater; 
      
-     // gas insulator
-     G4double           fGasinsulatorLength; 
-     G4double           fGasinsulatorRadius; 
-     G4LogicalVolume*   fLogicGasinsulator;
-     G4VPhysicalVolume* fPhysiGasinsulator;
-     G4Material*        fGasinsulatorMater; 
+     //Insulator
+     G4double           fInsulatorLength; 
+     G4double           fInsulatorInnerRadius; 
+     G4double           fInsulatorOuterRadius; 
+     G4LogicalVolume*   fLogicInsulator;
+     G4VPhysicalVolume* fPhysiInsulator;
+     G4Material*        fInsulatorMater; 
      
      // liquid argon container   
      G4double           fLArcontainerLength; 
-     G4double           fLArcontainerRadius; 
+     G4double           fLArcontainerInnerRadius; 
+     G4double           fLArcontainerOuterRadius; 
      G4LogicalVolume*   fLogicLArcontainer;
      G4VPhysicalVolume* fPhysiLArcontainer;
      G4Material*        fLArcontainerMater; 
@@ -117,22 +126,21 @@ class DetectorConstruction : public G4VUserDetectorConstruction
      G4VPhysicalVolume* fPhysiTarget;
      G4Material*        fTargetMater; 
      
-     // kapton window R1
+     // kapton window
      G4double           fKaptonThickness;
      G4Material*        fkapton;  
-     G4LogicalVolume*   fLogicKapWinR1;
+     G4LogicalVolume*   fLogicKapWin;
+     
+     // kapton window R1
      G4VPhysicalVolume* fPhysiKapWinR1;
 
      // kapton window R2 
-     G4LogicalVolume*   fLogicKapWinR2;
      G4VPhysicalVolume* fPhysiKapWinR2;
 
      // kapton window L1 
-     G4LogicalVolume*   fLogicKapWinL1;
      G4VPhysicalVolume* fPhysiKapWinL1;
 
      // kapton window L2
-     G4LogicalVolume*   fLogicKapWinL2;
      G4VPhysicalVolume* fPhysiKapWinL2;
 
      //Fill and vent lines
@@ -187,6 +195,17 @@ class DetectorConstruction : public G4VUserDetectorConstruction
      G4VPhysicalVolume* fPhysiDetector;
      G4Material*        fDetectorMater; 
      G4double           fDetectorPositionZ;
+     
+     // buffer volume
+     G4double						fBufferLength;
+     G4double						fBufferInnerRadius;
+     G4double						fBufferOuterRadius;
+     G4LogicalVolume*   fLogicBuffer;
+     G4Material*        fBufferMater; 
+     
+     G4VPhysicalVolume* fPhysiBufferL;
+     G4VPhysicalVolume* fPhysiBufferR;
+     
      
      
      DetectorMessenger* fDetectorMessenger;

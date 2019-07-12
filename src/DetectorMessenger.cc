@@ -56,7 +56,7 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction * Det)
   fDetDir->SetGuidance("detector construction commands");
         
   fMaterCmd = new G4UIcmdWithAString("/testhadr/det/setMat",this);
-  fMaterCmd->SetGuidance("Select material of the box.");
+  fMaterCmd->SetGuidance("Select material of the target.");
   fMaterCmd->SetParameterName("choice",false);
   fMaterCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
   
