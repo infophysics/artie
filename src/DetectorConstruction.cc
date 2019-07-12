@@ -89,6 +89,10 @@ DetectorConstruction::DetectorConstruction()
   fInsulatorContainerOuterRadius = 2.75*fInch2cm/2*cm; 
   
   
+  // kapton window
+  fKaptonThickness = 0.00762*cm;
+  //fKaptonThickness = 0.06*cm;
+
   //Fill and vent lines
   fPipeRadius = 2.*cm;
   fPipeLength = 10.*cm;
@@ -276,7 +280,8 @@ void DetectorConstruction::DefineMaterials()
   fDetectorMater = H2O;
 
   // kapton
-  fkapton  = man->FindOrBuildMaterial("G4_KAPTON"); //Aluminium; //
+  fkapton  = man->FindOrBuildMaterial("G4_KAPTON");
+  //fkapton  = Aluminium;
 
   //Beam Line
   fBeamLineMater = StainlessSteel;
