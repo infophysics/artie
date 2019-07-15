@@ -76,7 +76,7 @@ DetectorConstruction::DetectorConstruction()
   fLArcontainerOuterRadius = (1.+3./8)*fInch2cm/2*cm; // OD = 1-3/8"
   
   // kapton window
-  fKaptonThickness = 0.00762*cm; //
+  fKaptonThickness = 0.1*cm; //0.00762*cm; //
   
   // thermal insulator
   fInsulatorLength = fLArcontainerLength+2*fKaptonThickness;
@@ -240,18 +240,22 @@ void DetectorConstruction::DefineMaterials()
   G4Material* LiPoly = new G4Material("LiPoly", 1.06*g/cm3, ncomponents=2);
     LiPoly->AddElement (Li, 7.54*perCent);
     LiPoly->AddMaterial (polyethylene, 92.46*perCent);
+
+  // Nitrogen, STP
+  G4Material* Nitrogen = new G4Material("N2", 1.25053*mg/cm3, ncomponents=1);
+  Nitrogen->AddElement(N, 2);
   	
   // world mater
   fWorldMater = Air20;//Vacuum;
   
   // insulator container
-  fInsulatorContainerMater = StainlessSteel; //Aluminium; 
+  fInsulatorContainerMater = StainlessSteel; //
   
   // insulator
   fInsulatorMater = fVacuum;
   
   // LAr container
-  fLArcontainerMater = StainlessSteel; //Aluminium; //
+  fLArcontainerMater = StainlessSteel; 
   	
   // liquid argon target
   fTargetMater = man->FindOrBuildMaterial("G4_lAr");
@@ -264,7 +268,7 @@ void DetectorConstruction::DefineMaterials()
   fDetectorMater = H2O;
 
   // kapton
-  fkapton  = man->FindOrBuildMaterial("G4_KAPTON");
+  fkapton  = Aluminium; //man->FindOrBuildMaterial("G4_MYLAR");
 
   //Beam Line
   fBeamLineMater = StainlessSteel;
@@ -273,7 +277,7 @@ void DetectorConstruction::DefineMaterials()
   fBeamLineVolumeMater = fVacuum;
   
   // Buffer volume
-  fBufferMater = man->FindOrBuildMaterial("G4_N");
+  fBufferMater = Nitrogen; //man->FindOrBuildMaterial("G4_N");
 
   
  ///G4cout << *(G4Material::GetMaterialTable()) << G4endl;
@@ -562,13 +566,13 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
                                     false,                   
                                     0);  
  
- // buffer volume 
+ // buffer Container 
   G4Tubs* 
   sBuffer = new G4Tubs("Buffer_s",                                               
                         fBufferInnerRadius, fBufferOuterRadius, 0.5*fBufferLength, 0.,CLHEP::twopi);   
 
   fLogicBuffer = new G4LogicalVolume(sBuffer,                                    
-                                      fBufferMater,                              
+                                      fLArcontainerMater,                              
                                       "Buffer_l");           
 
   fPhysiBufferL = new G4PVPlacement(0,                        
@@ -584,7 +588,34 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
                                     "Buffer_p",              
                                     fLWorld,      
                                     false,                   
-                                    1);                              
+                                    1); 
+
+  //buffer Volume
+
+  G4Tubs* 
+  sBufferVol = new G4Tubs("BufferVol_s",                                               
+                        0, fBufferInnerRadius, 0.5*fBufferLength, 0.,CLHEP::twopi);   
+
+  fLogicBufferVol = new G4LogicalVolume(sBufferVol,                                    
+                                      fBufferMater,                              
+                                      "BufferVol_l");           
+
+  fPhysiBufferVolL = new G4PVPlacement(0,                        
+                                    G4ThreeVector(0., 0., 0),         
+                                    fLogicBufferVol ,           
+                                    "BufferVol_p",              
+                                    fLogicBuffer,      
+                                    false,                   
+                                    0);  
+  fPhysiBufferVolR = new G4PVPlacement(0,                        
+                                    G4ThreeVector(0., 0., 0),         
+                                    fLogicBufferVol ,           
+                                    "BufferVol_p",              
+                                    fLogicBuffer,      
+                                    false,                   
+                                    1);
+
+
                                                
   
   // set VisAttributes

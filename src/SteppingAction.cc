@@ -121,7 +121,8 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
   
   
   // Neutron Detected
-  if ( aStep->GetTrack()->GetDefinition()->GetParticleName() == "neutron"
+  if ( aStep->GetTrack()->GetTrackID() == 1
+  && aStep->GetTrack()->GetDefinition()->GetParticleName() == "neutron"
   && postPoint->GetStepStatus() == fGeomBoundary // step crossing bondary
   && preVolume == fDetector->GetLogicBeamLineV() // step prevolume is beam line volume
   && endVolume == fDetector->GetLogicDetector()

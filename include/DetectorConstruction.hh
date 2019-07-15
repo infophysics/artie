@@ -196,15 +196,20 @@ class DetectorConstruction : public G4VUserDetectorConstruction
      G4Material*        fDetectorMater; 
      G4double           fDetectorPositionZ;
      
-     // buffer volume
+     // buffer container
      G4double						fBufferLength;
      G4double						fBufferInnerRadius;
      G4double						fBufferOuterRadius;
      G4LogicalVolume*   fLogicBuffer;
      G4Material*        fBufferMater; 
-     
+
      G4VPhysicalVolume* fPhysiBufferL;
      G4VPhysicalVolume* fPhysiBufferR;
+
+     // buffer volume
+     G4LogicalVolume*   fLogicBufferVol;
+     G4VPhysicalVolume* fPhysiBufferVolL;
+     G4VPhysicalVolume* fPhysiBufferVolR;
      
      
      

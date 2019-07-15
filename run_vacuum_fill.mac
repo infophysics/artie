@@ -5,7 +5,7 @@
 #
 # neutron 2 MeV; all processes
 #
-/random/setSeeds 36997776 172371543
+/random/setSeeds 223587107 923262681
 /control/verbose 2
 /run/verbose 2
 /tracking/verbose 0
@@ -19,7 +19,7 @@
 /gun/particle neutron
 /gun/energy 2 MeV
 #
-/analysis/setFileName Artie_vacuum_fill_Alcont
+/analysis/setFileName Artie_vacuum_fill_AlWin
 /analysis/h1/set 0  100  0. 100. none	#nb colli >1eV
 /analysis/h1/set 1  100  0. 100. cm	#track len >1eV
 /analysis/h1/set 2  100  0. 5. us	#time of flight >1eV
@@ -36,4 +36,4 @@
 /testhadr/det/setMat Vacuum
 /run/printProgress 200
 #
-/run/beamOn 10000
+/run/beamOn 1000000
