@@ -76,7 +76,7 @@ DetectorConstruction::DetectorConstruction()
   fLArcontainerOuterRadius = (1.+3./8)*fInch2cm/2*cm; // OD = 1-3/8"
   
   // kapton window
-  fKaptonThickness = 0.1*cm; //0.00762*cm; //
+  fKaptonThickness = 0.00762*cm; //0.1*cm; //
   
   // thermal insulator
   fInsulatorLength = fLArcontainerLength+2*fKaptonThickness;
@@ -108,7 +108,7 @@ DetectorConstruction::DetectorConstruction()
   fDetectorMessenger = new DetectorMessenger(this);
   
   // Buffer volume
-  fBufferLength = 20*cm;    
+  fBufferLength = 5*cm;    
   fBufferInnerRadius = fLArcontainerInnerRadius;
   fBufferOuterRadius = fLArcontainerOuterRadius;
 
@@ -244,18 +244,26 @@ void DetectorConstruction::DefineMaterials()
   // Nitrogen, STP
   G4Material* Nitrogen = new G4Material("N2", 1.25053*mg/cm3, ncomponents=1);
   Nitrogen->AddElement(N, 2);
+
+  // Polyurethane (foam insulator)
+  G4Material* Polyurethane = new G4Material("Polyurethane", 1.005*g/cm3, ncomponents=4);
+  Polyurethane->AddElement(C, 3);
+  Polyurethane->AddElement(H, 8);
+  Polyurethane->AddElement(N, 2);
+  Polyurethane->AddElement(O, 1);
+
   	
   // world mater
-  fWorldMater = Air20;//Vacuum;
+  fWorldMater = Air20;//
   
   // insulator container
-  fInsulatorContainerMater = StainlessSteel; //
+  fInsulatorContainerMater = Aluminium; //StainlessSteel; //
   
   // insulator
-  fInsulatorMater = fVacuum;
+  fInsulatorMater = Polyurethane; //fVacuum;
   
   // LAr container
-  fLArcontainerMater = StainlessSteel; 
+  fLArcontainerMater = Aluminium; //StainlessSteel; //
   	
   // liquid argon target
   fTargetMater = man->FindOrBuildMaterial("G4_lAr");
@@ -268,7 +276,7 @@ void DetectorConstruction::DefineMaterials()
   fDetectorMater = H2O;
 
   // kapton
-  fkapton  = Aluminium; //man->FindOrBuildMaterial("G4_MYLAR");
+  fkapton  = man->FindOrBuildMaterial("G4_KAPTON"); //Aluminium; //
 
   //Beam Line
   fBeamLineMater = StainlessSteel;
@@ -331,22 +339,22 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
                             false,                      
                             0);                         
   
-  // Insulator container
-  G4Tubs* 
-  sInsulatorContainer = new G4Tubs("InsulatorContainer_s",                                               
-                        fInsulatorContainerInnerRadius, fInsulatorContainerOuterRadius, 0.5*fInsulatorContainerLength, 0.,CLHEP::twopi);   
+  // // Insulator container
+  // G4Tubs* 
+  // sInsulatorContainer = new G4Tubs("InsulatorContainer_s",                                               
+  //                       fInsulatorContainerInnerRadius, fInsulatorContainerOuterRadius, 0.5*fInsulatorContainerLength, 0.,CLHEP::twopi);   
 
-  fLogicInsulatorContainer = new G4LogicalVolume(sInsulatorContainer,     
-                                      fInsulatorContainerMater,     
-                                      "InsulatorContainer_l");      
+  // fLogicInsulatorContainer = new G4LogicalVolume(sInsulatorContainer,     
+  //                                     fInsulatorContainerMater,     
+  //                                     "InsulatorContainer_l");      
 
-  fPhysiInsulatorContainer = new G4PVPlacement(0,                   
-                            				G4ThreeVector(),          
-                                    fLogicInsulatorContainer ,      
-                                    "InsulatorContainer_p",         
-                                    fLWorld,                  
-                                    false,                    
-                                    0);                                                      
+  // fPhysiInsulatorContainer = new G4PVPlacement(0,                   
+  //                           				G4ThreeVector(),          
+  //                                   fLogicInsulatorContainer ,      
+  //                                   "InsulatorContainer_p",         
+  //                                   fLWorld,                  
+  //                                   false,                    
+  //                                   0);                                                      
   // Insulator
   G4Tubs* 
   sInsulator = new G4Tubs("Insulator_s",                                               
@@ -360,7 +368,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
                             				G4ThreeVector(),          
                                     fLogicInsulator ,      
                                     "Insulator_p",         
-                                    fLogicInsulatorContainer,       
+                                    fLWorld,       
                                     false,                    
                                     0);                       
                                     
@@ -423,8 +431,8 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
                                     false, 
                                     1);
 
-  G4RotationMatrix* PipeRot = new G4RotationMatrix;
-  PipeRot->rotateY(90.0*deg);
+  // G4RotationMatrix* PipeRot = new G4RotationMatrix;
+  // PipeRot->rotateY(90.0*deg);
 /*
   //lAr fill line In
   G4Tubs*
@@ -549,7 +557,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
 //                                    false,                   
 //                                    0);                      
 // 
-  // neutron detector 
+
   G4Tubs* 
   sDetector = new G4Tubs("Detector_s",                                               
                         0, fDetectorRadius, 0.5*fDetectorLength, 0.,CLHEP::twopi);   
@@ -604,36 +612,36 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
                                     G4ThreeVector(0., 0., 0),         
                                     fLogicBufferVol ,           
                                     "BufferVol_p",              
-                                    fLogicBuffer,      
+                                    fLWorld,      
                                     false,                   
                                     0);  
   fPhysiBufferVolR = new G4PVPlacement(0,                        
                                     G4ThreeVector(0., 0., 0),         
                                     fLogicBufferVol ,           
                                     "BufferVol_p",              
-                                    fLogicBuffer,      
+                                    fLWorld,      
                                     false,                   
                                     1);
 
 
                                                
   
-  // set VisAttributes
-  fLWorld->SetVisAttributes(G4VisAttributes::GetInvisible()); 
-  G4VisAttributes* VisAttInsulatorContainer= new G4VisAttributes(G4Colour(0.0, 1.0, 1.0)); // cyan
-  fLogicInsulatorContainer->SetVisAttributes(VisAttInsulatorContainer);  
-  G4VisAttributes* VisAttInsulator= new G4VisAttributes(G4Colour(1.0, 0.0, 1.0)); // magenta 
-  fLogicInsulator->SetVisAttributes(VisAttInsulator);  
-  G4VisAttributes* VisAttLArcontainer= new G4VisAttributes(G4Colour(0.0, 1.0, 0.0)); // green
-  fLogicLArcontainer->SetVisAttributes(VisAttLArcontainer);
-  G4VisAttributes* VisAttTarget= new G4VisAttributes(G4Colour(0.0, 0.0, 1.0)); // blue
-  fLogicTarget->SetVisAttributes(VisAttTarget);   
-  G4VisAttributes* VisAttDetector= new G4VisAttributes(G4Colour(1.0, 1.0, 0.0)); // yellow
-  fLogicDetector->SetVisAttributes(VisAttDetector);
-  G4VisAttributes* VisAttKapWin= new G4VisAttributes(G4Colour(1.0, 1.0, 0.0)); // yellow
-  fLogicKapWin->SetVisAttributes(VisAttKapWin);
-  G4VisAttributes* VisAttBeamLineV= new G4VisAttributes(G4Colour(1.0,0.0,0.0)); // red
-  fLogicBeamLineV->SetVisAttributes(VisAttBeamLineV);          
+  // // set VisAttributes
+  // fLWorld->SetVisAttributes(G4VisAttributes::GetInvisible()); 
+  // G4VisAttributes* VisAttInsulatorContainer= new G4VisAttributes(G4Colour(0.0, 1.0, 1.0)); // cyan
+  // fLogicInsulatorContainer->SetVisAttributes(VisAttInsulatorContainer);  
+  // G4VisAttributes* VisAttInsulator= new G4VisAttributes(G4Colour(1.0, 0.0, 1.0)); // magenta 
+  // fLogicInsulator->SetVisAttributes(VisAttInsulator);  
+  // G4VisAttributes* VisAttLArcontainer= new G4VisAttributes(G4Colour(0.0, 1.0, 0.0)); // green
+  // fLogicLArcontainer->SetVisAttributes(VisAttLArcontainer);
+  // G4VisAttributes* VisAttTarget= new G4VisAttributes(G4Colour(0.0, 0.0, 1.0)); // blue
+  // fLogicTarget->SetVisAttributes(VisAttTarget);   
+  // G4VisAttributes* VisAttDetector= new G4VisAttributes(G4Colour(1.0, 1.0, 0.0)); // yellow
+  // fLogicDetector->SetVisAttributes(VisAttDetector);
+  // G4VisAttributes* VisAttKapWin= new G4VisAttributes(G4Colour(1.0, 1.0, 0.0)); // yellow
+  // fLogicKapWin->SetVisAttributes(VisAttKapWin);
+  // G4VisAttributes* VisAttBeamLineV= new G4VisAttributes(G4Colour(1.0,0.0,0.0)); // red
+  // fLogicBeamLineV->SetVisAttributes(VisAttBeamLineV);          
     
   PrintParameters();
   

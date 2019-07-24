@@ -65,7 +65,7 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
 
   //RNG
   G4double mu = 0.*CLHEP::ns;
-  G4double sigma = 1.0*CLHEP::ns;
+  G4double sigma = 120.0*CLHEP::ns;
   
   // The track does not exist
   if(preStepPhysical == 0 || postStepPhysical == 0) return;
@@ -111,6 +111,13 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
   }
 */ 
 
+  if (aStep->GetTrack()->GetDefinition()->GetParticleName() == "neutron"){ 
+
+    G4double trackid = aStep->GetTrack()->GetTrackID();
+    G4AnalysisManager::Instance()->FillH1(13,trackid);
+
+  }
+
   if (aStep->GetTrack()->GetTrackID() == 1
   && aStep->GetTrack()->GetDefinition()->GetParticleName() == "neutron"
   && postPoint->GetStepStatus() == fGeomBoundary // step crossing bondary
@@ -121,10 +128,11 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
   
   
   // Neutron Detected
-  if ( aStep->GetTrack()->GetTrackID() == 1
+  if (aStep->GetTrack()->GetTrackID() == 1
   && aStep->GetTrack()->GetDefinition()->GetParticleName() == "neutron"
   && postPoint->GetStepStatus() == fGeomBoundary // step crossing bondary
   && preVolume == fDetector->GetLogicBeamLineV() // step prevolume is beam line volume
+  //&& preVolume == fDetector->GetLogicWorld()
   && endVolume == fDetector->GetLogicDetector()
   ){ // step postvolume is neutron detector) 
     
