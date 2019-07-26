@@ -2,4 +2,6 @@
 bin
 tmp
 *.root
+*.log
 *.out
+results
