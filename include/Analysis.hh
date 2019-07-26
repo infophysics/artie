@@ -10,13 +10,13 @@
 #include "G4UserSteppingAction.hh"
 #include "G4VUserActionInitialization.hh"
 
+class G4UIdirectory;
 class G4UIcmdWithADouble;
 class G4UIcmdWithAnInteger;
 class G4UIcmdWithAString;
 class G4Step;
 class G4Event;
 class G4Run;
-class G4UIdirectory;
 class TFile;
 class TTree;
 class TH1D;
@@ -28,7 +28,7 @@ class Analysis:
   public:
   class Init :  public G4VUserActionInitialization {
   public:
-    Init() : G4VUserActionInitialization() {}
+    Init() : G4VUserActionInitialization() { Analysis::instance();}
     virtual ~Init() {}  
     virtual void   BuildForMaster() const;
     virtual void   Build() const;          

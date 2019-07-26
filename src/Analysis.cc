@@ -67,6 +67,7 @@ Analysis::Analysis()
 Analysis::~Analysis()
 {
   instance_ = NULL;
+  delete ntupleFilenameCmd_;
   delete dummyDoubleCmd_;
   delete dummyIntCmd_;
   delete analysisDir_;
@@ -185,7 +186,10 @@ void Analysis::Step(const G4Step* step)
   if(preStepPhysical->GetCopyNo() == -1 && postStepPhysical->GetCopyNo() == -1) return;
   
   // Only consider the initial neutron
-  if (step->GetTrack()->GetTrackID() != 1) return;
+  //if (step->GetTrack()->GetTrackID() != 1) return;
+
+  // Only consider neutrons:
+  if (step->GetTrack()->GetDefinition()->GetParticleName() != "neutron") return;
 
   // Keep track of how often each process occurred:
   const G4VProcess* process   = post->GetProcessDefinedStep();
