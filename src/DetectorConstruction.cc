@@ -61,10 +61,17 @@ DetectorConstruction::DetectorConstruction()
 :G4VUserDetectorConstruction(),
  fPWorld(0), fLWorld(0), fWorldMater(0), fDetectorMessenger(0)
 {
-  fWorldSizeX = 2*m;
-  fWorldSizeY = 2*m;
-  fWorldSizeZ = 140*m;
+  fWorldSizeX = 4*m;
+  fWorldSizeY = 4*m;
+  fWorldSizeZ = 200*m;
   DefineMaterials();
+
+  //Room
+  fRoomSizeX = 2*m;
+  fRoomSizeY = 2*m;
+  fRoomSizeZ = 180*m;
+
+  fRoomThickness = 1*m;
   
   // liquid argon target
   fTargetLength = 200.*cm; 
@@ -255,6 +262,9 @@ void DetectorConstruction::DefineMaterials()
   	
   // world mater
   fWorldMater = Air20;//
+
+  //Room Wall Mater
+  fRoomMater = man->FindOrBuildMaterial("G4_CONCRETE");
   
   // insulator container
   fInsulatorContainerMater = Aluminium; //StainlessSteel; //
@@ -337,7 +347,36 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
                             fWorldMater->GetName(),     
                             0,                          
                             false,                      
-                            0);                         
+                            0);    
+
+  //Room
+  G4Box*
+  sRoom = new G4Box("Room_s", fRoomSizeX/2, fRoomSizeY/2, fRoomSizeZ/2);
+
+  fLogicRoom = new G4LogicalVolume(sRoom, fRoomMater, "Room_l");
+
+  fPhysiRoom = new G4PVPlacement(0, 
+                                G4ThreeVector(),
+                                fLogicRoom,
+                                "Room_p",
+                                fLWorld,
+                                false,
+                                0);
+
+  //Room Volume
+  G4Box*
+  sRoomVolume = new G4Box("RoomVolume_s", (fRoomSizeX - fRoomThickness)/2, (fRoomSizeY - fRoomThickness)/2, (fRoomSizeZ - fRoomThickness)/2);
+
+  fLogicRoomVolume = new G4LogicalVolume(sRoomVolume, fWorldMater, "RoomVolume_l");
+
+  fPhysiRoomVolume = new G4PVPlacement(0,
+                                G4ThreeVector(),
+                                fLogicRoomVolume,
+                                "RoomVolume_p",
+                                fLogicRoom,
+                                false,
+                                0);
+
   
   // // Insulator container
   // G4Tubs* 
@@ -368,7 +407,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
                             				G4ThreeVector(),          
                                     fLogicInsulator ,      
                                     "Insulator_p",         
-                                    fLWorld,       
+                                    fLogicRoomVolume,       
                                     false,                    
                                     0);                       
                                     
@@ -385,7 +424,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
                             				G4ThreeVector(),        
                                     fLogicLArcontainer ,    
                                     "LArcontainer_p",       
-                                    fLWorld,     
+                                    fLogicRoomVolume,     
                                     false,                  
                                     0);                                                      
   
@@ -402,7 +441,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
                             				G4ThreeVector(),         
                                     fLogicTarget ,           
                                     "Target_p",              
-                                    fLWorld,    //fLWorld, //  
+                                    fLogicRoomVolume,    //fLWorld, //  
                                     false,                   
                                     0);     
                                     
@@ -418,7 +457,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
   									G4ThreeVector(0,0, -fTargetLength*0.5-0.5*fKaptonThickness), 
   	                                fLogicKapWin,           
                                     "KapWinL1_p",
-                                    fLWorld,      
+                                    fLogicRoomVolume,      
                                     false,                   
                                     0);     
   
@@ -427,7 +466,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
   									G4ThreeVector(0,0, fTargetLength*0.5+0.5*fKaptonThickness), 
   	                                fLogicKapWin ,          
                                     "KapWinR1_p",              
-                                    fLWorld,  
+                                    fLogicRoomVolume,  
                                     false, 
                                     1);
 
@@ -515,7 +554,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
                     G4ThreeVector(0, 0, 0.5*fInsulatorContainerLength + fBufferLength + 0.5*fBeamLineLength),
                                     fLogicBeamLine ,           
                                     "BeamLine_p",              
-                                    fLWorld,      
+                                    fLogicRoomVolume,      
                                     false,                   
                                     0);
 
@@ -570,7 +609,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
                             				G4ThreeVector(0., 0., fDetectorPositionZ),         
                                     fLogicDetector ,           
                                     "Detector_p",              
-                                    fLWorld,      
+                                    fLogicRoomVolume,      
                                     false,                   
                                     0);  
  
@@ -587,14 +626,14 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
                             				G4ThreeVector(0., 0., -fInsulatorContainerLength/2-fBufferLength/2),         
                                     fLogicBuffer ,           
                                     "Buffer_p",              
-                                    fLWorld,      
+                                    fLogicRoomVolume,      
                                     false,                   
                                     0);  
   fPhysiBufferR = new G4PVPlacement(0,                        
                             				G4ThreeVector(0., 0., fInsulatorContainerLength/2+fBufferLength/2),         
                                     fLogicBuffer ,           
                                     "Buffer_p",              
-                                    fLWorld,      
+                                    fLogicRoomVolume,      
                                     false,                   
                                     1); 
 
@@ -612,14 +651,14 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
                                     G4ThreeVector(0., 0., 0),         
                                     fLogicBufferVol ,           
                                     "BufferVol_p",              
-                                    fLWorld,      
+                                    fLogicRoomVolume,      
                                     false,                   
                                     0);  
   fPhysiBufferVolR = new G4PVPlacement(0,                        
                                     G4ThreeVector(0., 0., 0),         
                                     fLogicBufferVol ,           
                                     "BufferVol_p",              
-                                    fLWorld,      
+                                    fLogicRoomVolume,      
                                     false,                   
                                     1);
 

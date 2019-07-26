@@ -92,7 +92,20 @@ class DetectorConstruction : public G4VUserDetectorConstruction
      G4double           fWorldSizeY;
      G4double           fWorldSizeZ;
      G4Material*        fWorldMater;   
-    
+
+     //Room
+     G4VPhysicalVolume* fPhysiRoom;
+     G4LogicalVolume*   fLogicRoom;
+     G4double           fRoomSizeX;
+     G4double           fRoomSizeY;
+     G4double           fRoomSizeZ;
+     G4Material*        fRoomMater;
+
+     //Room Volume
+     G4VPhysicalVolume* fPhysiRoomVolume;
+     G4LogicalVolume*   fLogicRoomVolume;
+     G4double           fRoomThickness;
+
      
      // Insulator container
      G4double           fInsulatorContainerLength; 

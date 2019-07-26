@@ -27,7 +27,7 @@
 /analysis/h1/set 4  100  0. 500. cm	#track len <1eV
 /analysis/h1/set 5  100  0. 1000. us	#time of flight <1eV
 /analysis/h1/set 6  1000  0. 100. us	#time of flight seen by the neutron detector
-/analysis/h1/set 7  1000  0. 1 MeV	#step energy of the primary neutron
+/analysis/h1/set 7  1000  0. 1. MeV	#step energy of the primary neutron
 /analysis/h1/set 8  100  0.04025 0.09025 MeV	#energy of the transmitted neutron getting into the detector
 /analysis/h1/set 9  100  0.04025 0.09025 MeV	#energy of the beam neutron 
 /analysis/h1/set 13  10  0 5 none #Track ID of the neutrons
@@ -37,4 +37,4 @@
 /testhadr/det/setMat Vacuum
 /run/printProgress 200
 #
-/run/beamOn 1000000
+/run/beamOn 100000

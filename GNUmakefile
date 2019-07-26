@@ -7,12 +7,12 @@ name := Hadr04
 G4TARGET := $(name)
 G4EXLIB := true
 
-ifndef G4INSTALL
-  G4INSTALL = ../../../..
-endif
-
 .PHONY: all
 all: lib bin
+
+# ROOT support
+CPPFLAGS += -I$(shell root-config --incdir) -g
+EXTRALIBS = $(shell root-config --glibs)
 
 include $(G4INSTALL)/config/architecture.gmk
 
