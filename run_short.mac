@@ -9,10 +9,13 @@
 /control/verbose 2
 /run/verbose 2
 /tracking/verbose 0
+
 #
 /testhadr/phys/thermalScattering true
 #
 /run/initialize
+/testhadr/det/setMat Vacuum
+#/testhadr/det/setMat G4_lAr
 #
 /process/list
 #
@@ -23,3 +26,4 @@
 /run/printProgress 200
 #
 /run/beamOn 100
+

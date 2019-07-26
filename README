@@ -26,9 +26,9 @@ We'll be staying current with the original repository of Jingbo, so you should a
 
 You'll see origin (your fork) and upstream (main repository of Jingbo)
 
---Compilation on DUNE GPVM--
+--Compilation on DUNE GPVM (13 and higher)--
 
-> source ./setup_geant.csh
+> source ./setup/dunegpvm.csh
 > make 
 > ./bin/Linux-g++/Artie run_short.mac 
 
