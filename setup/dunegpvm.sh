@@ -38,5 +38,5 @@ unset G4CASCADE_USE_PRECOMPOUND
 #### G4CASCADE_USE_PRECOMPOUND=1
 #### export G4CASCADE_USE_PRECOMPOUND             
 
-env |grep G4NEUTRONHP
-env |grep G4CASCADE
+env |grep G4
+

@@ -10,12 +10,18 @@
 /run/verbose 2
 /tracking/verbose 0
 
+# this will dump the entire list of commands:
+#/control/manual /
+
+/analysis/ntuple_filename short.root
+
 #
 /testhadr/phys/thermalScattering true
 #
+
 /run/initialize
-/testhadr/det/setMat Vacuum
-#/testhadr/det/setMat G4_lAr
+#/testhadr/det/setMat Vacuum
+/testhadr/det/setMat G4_lAr
 #
 /process/list
 #
