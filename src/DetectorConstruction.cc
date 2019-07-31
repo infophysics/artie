@@ -1,66 +1,106 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
-//
-/// \file DetectorConstruction.cc
-/// \brief Implementation of the DetectorConstruction class
-//
-// $Id: DetectorConstruction.cc 70755 2013-06-05 12:17:48Z ihrivnac $
-//
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-#include "DetectorConstruction.hh"
-#include "DetectorMessenger.hh"
 #include "G4Material.hh"
 #include "G4NistManager.hh"
-
 #include "G4Box.hh"
 #include "G4Tubs.hh"
 #include "G4LogicalVolume.hh"
 #include "G4PVPlacement.hh"
 #include "G4SubtractionSolid.hh"
-
 #include "G4GeometryManager.hh"
 #include "G4PhysicalVolumeStore.hh"
 #include "G4LogicalVolumeStore.hh"
 #include "G4SolidStore.hh"
 #include "G4RunManager.hh"
-
 #include "G4UnitsTable.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4VisAttributes.hh"
-
 #include "G4RotationMatrix.hh"
+#include "G4UIdirectory.hh"
+#include "G4UIcommand.hh"
+#include "G4UIparameter.hh"
+#include "G4UIcmdWithAString.hh"
+#include "G4UIcmdWithADoubleAndUnit.hh"
+#include "G4UIcmdWithoutParameter.hh"
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+#include "DetectorConstruction.hh"
+
+
+void DetectorConstruction::SetNewValue(G4UIcommand* command,G4String newValue)
+{ 
+  if( command == fMaterCmd )
+   { SetMaterial(newValue);}
+   
+  if( command == fSizeCmd )
+   { SetSize(fSizeCmd->GetNewDoubleValue(newValue));}
+     
+  if (command == fIsotopeCmd)
+   {
+     G4int Z; G4int A; G4double dens;
+     G4String name, unt;
+     std::istringstream is(newValue);
+     is >> name >> Z >> A >> dens >> unt;
+     dens *= G4UIcommand::ValueOf(unt);
+     MaterialWithSingleIsotope (name,name,dens,Z,A);
+     SetMaterial(name);    
+   }   
+}
+
+
 
 DetectorConstruction::DetectorConstruction()
-:G4VUserDetectorConstruction(),
- fPWorld(0), fLWorld(0), fWorldMater(0), fDetectorMessenger(0)
-{
+  :G4VUserDetectorConstruction(), G4UImessenger(), 
+   fPWorld(0), fLWorld(0), fWorldMater(0), 
+   fTestemDir(0), fDetDir(0), fMaterCmd(0), fSizeCmd(0), fIsotopeCmd(0)
+{ 
+  fTestemDir = new G4UIdirectory("/artie/");
+  fTestemDir->SetGuidance("commands specific to this example");
+  
+  G4bool broadcast = false;
+  fDetDir = new G4UIdirectory("/artie/det/",broadcast);
+  fDetDir->SetGuidance("detector construction commands");
+        
+  fMaterCmd = new G4UIcmdWithAString("/artie/det/setMat",this);
+  fMaterCmd->SetGuidance("Select material of the target.");
+  fMaterCmd->SetParameterName("choice",false);
+  fMaterCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
+  
+  fSizeCmd = new G4UIcmdWithADoubleAndUnit("/artie/det/setSize",this);
+  fSizeCmd->SetGuidance("Set size of the box");
+  fSizeCmd->SetParameterName("Size",false);
+  fSizeCmd->SetRange("Size>0.");
+  fSizeCmd->SetUnitCategory("Length");
+  fSizeCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
+       
+  fIsotopeCmd = new G4UIcommand("/artie/det/setIsotopeMat",this);
+  fIsotopeCmd->SetGuidance("Build and select a material with single isotope");
+  fIsotopeCmd->SetGuidance("  symbol of isotope, Z, A, density of material");
+  //
+  G4UIparameter* symbPrm = new G4UIparameter("isotope",'s',false);
+  symbPrm->SetGuidance("isotope symbol");
+  fIsotopeCmd->SetParameter(symbPrm);
+  //      
+  G4UIparameter* ZPrm = new G4UIparameter("Z",'i',false);
+  ZPrm->SetGuidance("Z");
+  ZPrm->SetParameterRange("Z>0");
+  fIsotopeCmd->SetParameter(ZPrm);
+  //      
+  G4UIparameter* APrm = new G4UIparameter("A",'i',false);
+  APrm->SetGuidance("A");
+  APrm->SetParameterRange("A>0");
+  fIsotopeCmd->SetParameter(APrm);  
+  //    
+  G4UIparameter* densityPrm = new G4UIparameter("density",'d',false);
+  densityPrm->SetGuidance("density of material");
+  densityPrm->SetParameterRange("density>0.");
+  fIsotopeCmd->SetParameter(densityPrm);
+  //
+  G4UIparameter* unitPrm = new G4UIparameter("unit",'s',false);
+  unitPrm->SetGuidance("unit of density");
+  G4String unitList = G4UIcommand::UnitsList(G4UIcommand::CategoryOf("g/cm3"));
+  unitPrm->SetParameterCandidates(unitList);
+  fIsotopeCmd->SetParameter(unitPrm);
+  //
+  fIsotopeCmd->AvailableForStates(G4State_PreInit,G4State_Idle);  
+
   fWorldSizeX = 4*m;
   fWorldSizeY = 4*m;
   fWorldSizeZ = 200*m;
@@ -112,7 +152,6 @@ DetectorConstruction::DetectorConstruction()
   fDetectorLength = 20.*cm;
   fDetectorRadius = 2.*cm; // not known
   fDetectorPositionZ = 70.*m;
-  fDetectorMessenger = new DetectorMessenger(this);
   
   // Buffer volume
   fBufferLength = 5*cm;    
@@ -123,25 +162,23 @@ DetectorConstruction::DetectorConstruction()
   fBeamLineLength = fDetectorPositionZ - 0.5*fDetectorLength - 0.5*fInsulatorContainerLength- fBufferLength;
   fBeamLineRadiusOUT = 20.*cm;
   fBeamLineRadiusIN = 18.*cm;
-  
-  
-
-
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 DetectorConstruction::~DetectorConstruction()
-{ delete fDetectorMessenger;}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+{ 
+  delete fMaterCmd;
+  delete fSizeCmd;
+  delete fIsotopeCmd;
+  delete fDetDir;
+  delete fTestemDir;
+}
 
 G4VPhysicalVolume* DetectorConstruction::Construct()
 {
   return ConstructVolumes();
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 
 void DetectorConstruction::DefineMaterials()
 {
@@ -301,7 +338,7 @@ void DetectorConstruction::DefineMaterials()
  ///G4cout << *(G4Material::GetMaterialTable()) << G4endl;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 
 G4Material* DetectorConstruction::MaterialWithSingleIsotope( G4String name,
                            G4String symbol, G4double density, G4int Z, G4int A)
@@ -322,7 +359,7 @@ G4Material* DetectorConstruction::MaterialWithSingleIsotope( G4String name,
  return material;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 
 G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
 {
@@ -689,7 +726,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
   return fPWorld;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 
 void DetectorConstruction::PrintParameters()
 {
@@ -698,7 +735,7 @@ void DetectorConstruction::PrintParameters()
          << "\n \n" << fWorldMater << G4endl;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 
 void DetectorConstruction::SetMaterial(G4String materialChoice)
 {
@@ -725,7 +762,7 @@ void DetectorConstruction::SetMaterial(G4String materialChoice)
             
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 
 void DetectorConstruction::SetSize(G4double value)
 {
@@ -733,5 +770,5 @@ void DetectorConstruction::SetSize(G4double value)
   G4RunManager::GetRunManager()->ReinitializeGeometry();
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 
