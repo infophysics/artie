@@ -24,9 +24,6 @@ public:
   // UI Messenger Interface (for setting parameters):
   virtual void SetNewValue(G4UIcommand*, G4String);
   
-  G4Material* 
-  MaterialWithSingleIsotope(G4String, G4String, G4double, G4int, G4int);
-         
   void SetSize     (G4double);              
   void SetMaterial (G4String);            
 

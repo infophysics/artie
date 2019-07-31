@@ -32,16 +32,6 @@ void DetectorConstruction::SetNewValue(G4UIcommand* command,G4String newValue)
   if( command == fSizeCmd )
    { SetSize(fSizeCmd->GetNewDoubleValue(newValue));}
      
-  if (command == fIsotopeCmd)
-   {
-     G4int Z; G4int A; G4double dens;
-     G4String name, unt;
-     std::istringstream is(newValue);
-     is >> name >> Z >> A >> dens >> unt;
-     dens *= G4UIcommand::ValueOf(unt);
-     MaterialWithSingleIsotope (name,name,dens,Z,A);
-     SetMaterial(name);    
-   }   
 }
 
 
@@ -336,27 +326,6 @@ void DetectorConstruction::DefineMaterials()
 
   
  ///G4cout << *(G4Material::GetMaterialTable()) << G4endl;
-}
-
-
-
-G4Material* DetectorConstruction::MaterialWithSingleIsotope( G4String name,
-                           G4String symbol, G4double density, G4int Z, G4int A)
-{
- // define a material from an isotope
- //
- G4int ncomponents;
- G4double abundance, massfraction;
-
- G4Isotope* isotope = new G4Isotope(symbol, Z, A);
- 
- G4Element* element  = new G4Element(name, symbol, ncomponents=1);
- element->AddIsotope(isotope, abundance= 100.*perCent);
- 
- G4Material* material = new G4Material(name, density, ncomponents=1);
- material->AddElement(element, massfraction=100.*perCent);
-
- return material;
 }
 
 
