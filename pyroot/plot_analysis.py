@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 def energy_from_tof(tof):
     MN = 939*1000.0  # keV 
     C  = 3E2         # m / mus
-    L = 71.03        # m
+    L = 100.0        # m
     beta = (L / tof) / C
     gamma = (1.0 / (1 - beta**2))**0.5
     return (gamma - 1.0)*MN    
