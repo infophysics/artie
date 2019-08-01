@@ -77,6 +77,7 @@ private:
   G4double   window_thickness_;     // thickness of each window in containment vessel
   G4bool     target_in_;            // is the target volume in?
   G4bool     container_in_;         // is the target container included with target?
+  G4bool     hall_in_;              // include model for experimental hall?
 
   // UI commands:
   // - include command "/control/manual /artie/det" into .mac file for a detailed description of each command:
@@ -92,6 +93,7 @@ private:
   G4UIcmdWithADouble*        fWindowThicknessCmd; 
   G4UIcmdWithABool*          fTargetInCmd;
   G4UIcmdWithABool*          fContainerInCmd;
+  G4UIcmdWithABool*          fHallInCmd;
 
   // Divide Construction Into Steps:
   void DefineMaterials();  

@@ -9,26 +9,17 @@
 /control/verbose 2
 /run/verbose 2
 /tracking/verbose 0
-
+#
 # this will dump the entire list of commands:
 #/control/manual /
-
-/analysis/ntuple_filename vacuum.root
-
+# this will dump all processes:
+#/process/list
 #
 /testhadr/phys/thermalScattering true
-#
+/artie/det/target_material vacuum_rough
 
+/analysis/ntuple_filename vacuum.root
 /run/initialize
-/testhadr/det/setMat Vacuum
-
-/process/list
-#
-#
-/gun/particle neutron
-/gun/energy 2 MeV
-#
 /run/printProgress 200
-#
-/run/beamOn 1000000
+/run/beamOn 100000
 

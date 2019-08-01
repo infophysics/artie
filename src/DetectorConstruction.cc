@@ -113,6 +113,11 @@ void DetectorConstruction::SetNewValue(G4UIcommand* command, G4String arg){
     G4cout << "INFO:  Set target container in flag " << arg << " parsed as " << container_in_ << "\n";
     return;
   }
+  if( command ==  fHallInCmd){
+    hall_in_ = (arg == "true");
+    G4cout << "INFO:  Set target hall in flag " << arg << " parsed as " << hall_in_ << "\n";
+    return;
+  }
 }
 
 
@@ -166,6 +171,10 @@ DetectorConstruction::DetectorConstruction()
   fContainerInCmd = new G4UIcmdWithABool("/artie/det/container_in",this);
   fContainerInCmd->SetGuidance("Is the target container in place?");
   fContainerInCmd->SetParameterName("in",false);
+
+  fHallInCmd = new G4UIcmdWithABool("/artie/det/hall_in",this);
+  fHallInCmd->SetGuidance("Model the experimental hall??");
+  fHallInCmd->SetParameterName("in",false);
 
   world_    = NULL;
   target_   = NULL;
@@ -260,18 +269,26 @@ void DetectorConstruction::PrintParameters()
   G4double flight_path = detector_entrance_ - tzero_location_;
   G4cout << "Neutron Flight Path is " <<  flight_path / m << " m\n";
 
-
 }
 
 
 void DetectorConstruction::ConstructHall(){
+  static const double wall_thickness = 1*m;
+
+  if (hall_in_){
+    G4Box* outer = new G4Box("Wall_outer", world_xy/2, world_xy/2, world_z/2);
+    G4Box* inner = new G4Box("Wall_inner", world_xy/2-wall_thickness, world_xy/2-wall_thickness, world_z/2-wall_thickness);
+    G4SubtractionSolid * wall_s = new G4SubtractionSolid("Wall_s",outer,inner);
+    G4LogicalVolume * wall_l = new G4LogicalVolume(wall_s, concrete_, "Wall_l");
+    new G4PVPlacement(0, G4ThreeVector(), wall_l, "Wall_p", world_, false, 0);
+  }
 
 }
 
 void DetectorConstruction::ConstructBeamPipe(){
   // the beam pipe goes from negative infinity to the detector with a gap to accomodate the target
-  static const double beam_radius_inner = 18*cm;
-  //static const double beam_radius_outer = 20*cm;
+  static const double beampipe_radius_inner = 18*cm;
+  static const double beampipe_radius_outer = 20*cm;
 
   static const double gap = 2.5 * m;  // gap to accommodate target
   double pos_a = -world_z / 2.0;
@@ -284,17 +301,28 @@ void DetectorConstruction::ConstructBeamPipe(){
   double right_halflength  = (pos_d - pos_c) / 2.0;
   double right_position    = (pos_d + pos_c) / 2.0; 
 
-  G4Tubs* left_beam_s = new G4Tubs("left_beam_s", 0, beam_radius_inner, left_halflength, 0.,CLHEP::twopi);   
+  G4Tubs* left_beam_s = new G4Tubs("left_beam_s", 0, beampipe_radius_inner, left_halflength, 0.,CLHEP::twopi);   
   G4LogicalVolume* left_beam_l = new G4LogicalVolume(left_beam_s, vacuum_high_, "left_beam_l");                                    
   new G4PVPlacement(0, G4ThreeVector(0,0,left_position), left_beam_l, "left_beam_p", world_, false, 0);
 
-  G4Tubs* right_beam_s = new G4Tubs("right_beam_s", 0, beam_radius_inner, right_halflength, 0.,CLHEP::twopi);   
+  G4Tubs* right_beam_s = new G4Tubs("right_beam_s", 0, beampipe_radius_inner, right_halflength, 0.,CLHEP::twopi);   
   G4LogicalVolume* right_beam_l = new G4LogicalVolume(right_beam_s, vacuum_high_, "right_beam_l");                                    
   new G4PVPlacement(0, G4ThreeVector(0,0,right_position), right_beam_l, "right_beam_p", world_, false, 0);
+
+
+  G4Tubs* left_pipe_s = new G4Tubs("left_pipe_s", beampipe_radius_inner, beampipe_radius_outer, left_halflength, 0.,CLHEP::twopi);   
+  G4LogicalVolume* left_pipe_l = new G4LogicalVolume(left_pipe_s, vacuum_high_, "left_pipe_l");                                    
+  new G4PVPlacement(0, G4ThreeVector(0,0,left_position), left_pipe_l, "left_pipe_p", world_, false, 0);
+
+  G4Tubs* right_pipe_s = new G4Tubs("right_pipe_s", beampipe_radius_inner, beampipe_radius_outer, right_halflength, 0.,CLHEP::twopi);   
+  G4LogicalVolume* right_pipe_l = new G4LogicalVolume(right_pipe_s, vacuum_high_, "right_pipe_l");                                    
+  new G4PVPlacement(0, G4ThreeVector(0,0,right_position), right_pipe_l, "right_pipe_p", world_, false, 0);
 
 }
 
 void DetectorConstruction::ConstructTarget(){
+  static const double buffer_length = 5*cm; 
+
   G4cout << "target_in_:  " << target_in_ << "\n";
   if (target_in_){
     G4Tubs* solid = new G4Tubs("Target_s", 0, target_radius_, 0.5*target_length_, 0.,CLHEP::twopi);   
@@ -317,6 +345,12 @@ void DetectorConstruction::ConstructTarget(){
     G4LogicalVolume* window_l = new G4LogicalVolume(window_s, kapton_, "Window_l");
     new G4PVPlacement(0,G4ThreeVector(0,0, -(target_length_+window_thickness_)*0.5),window_l, "left_window_p", world_, false, 0);
     new G4PVPlacement(0,G4ThreeVector(0,0, +(target_length_+window_thickness_)*0.5),window_l, "rght_window_p", world_, false, 0);
+
+    // The gas buffers:
+    G4Tubs* buffer_s = new G4Tubs("Buffer_s", 0, target_radius_, 0.5*buffer_length, 0., CLHEP::twopi);
+    G4LogicalVolume* buffer_l = new G4LogicalVolume(buffer_s, argon_gas_, "Buffer_l");
+    new G4PVPlacement(0,G4ThreeVector(0,0, -(target_length_+2*window_thickness_+buffer_length)*0.5),buffer_l, "left_buffer_p", world_, false, 0);
+    new G4PVPlacement(0,G4ThreeVector(0,0, +(target_length_+2*window_thickness_+buffer_length)*0.5),buffer_l, "rght_buffer_p", world_, false, 0);
 
   }
 }
