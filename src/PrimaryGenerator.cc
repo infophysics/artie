@@ -31,7 +31,9 @@ PrimaryGenerator::~PrimaryGenerator()
 void PrimaryGenerator::GeneratePrimaries(G4Event* anEvent)
 {
   fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0., 0., 1.));
-  fParticleGun->SetParticlePosition(G4ThreeVector(0.*cm,0.*cm,-106.*cm));
+
+  // tzero position should be taken from geometry, hard-coded for now:
+  fParticleGun->SetParticlePosition(G4ThreeVector(0.*cm,0.*cm,-30.*m));
 //  fParticleGun->SetParticleEnergy(57*keV);
   //G4double e = 57*keV;//100*G4UniformRand()*keV; //
   G4double e = (40+50*G4UniformRand())*keV; //

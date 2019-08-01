@@ -16,8 +16,10 @@
 #/process/list
 #
 /testhadr/phys/thermalScattering true
+#/artie/det/world_material vacuum_high
 #/artie/det/target_material vacuum_rough
 /artie/det/target_material argon_liquid
+
 /analysis/ntuple_filename short.root
 /run/initialize
 /run/printProgress 200

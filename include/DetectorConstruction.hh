@@ -23,23 +23,27 @@ public:
   // UI Messenger Interface (for setting parameters):
   virtual void SetNewValue(G4UIcommand*, G4String);
   
-
-
-  //void SetMaterial (G4String);            
-  //const G4VPhysicalVolume* GetWorld()      {return fPWorld;};           
-                    
-  //G4double           GetSize()       {return fWorldSizeX;}; //usless function (J.Wang)     
-  //G4Material*        GetMaterial()   {return fWorldMater;};
-     
-  const G4LogicalVolume* GetLogicWorld()           {return fLWorld;};   
-  const G4LogicalVolume* GetLogicDetector()        {return fLogicDetector;};  
-  const G4LogicalVolume* GetLogicTarget()        {return fLogicTarget;};
-  const G4LogicalVolume* GetLogicLArcontainer()        {return fLogicLArcontainer;}; 
-  const G4LogicalVolume* GetLogicBeamLineV()     {return fLogicBeamLineV;};   
+  const G4LogicalVolume* GetLogicWorld()           {return world_;};   
+  const G4LogicalVolume* GetLogicDetector()        {return detector_;};  
+  const G4LogicalVolume* GetLogicTarget()          {return target_;};
+  //const G4LogicalVolume* GetLogicLArcontainer()    {return fLogicLArcontainer;}; 
+  //const G4LogicalVolume* GetLogicBeamLineV()       {return fLogicBeamLineV;};   
   
   void               PrintParameters();
-  
+
+  // location of neutrons at t=0 (hook provided for primary generator)
+  double TzeroLocation(){return tzero_location_; }
+
+
+  // fixed values:
+  static const double world_xy;
+  static const double world_z;
+
 private:
+  // Logical Volumes:
+  G4LogicalVolume * world_;
+  G4LogicalVolume * target_;
+  G4LogicalVolume * detector_;
     
   // Defined Materials 
   G4Material * air_; 
@@ -50,7 +54,7 @@ private:
   G4Material * aluminum_;
   G4Material * graphite_;
   G4Material * vacuum_rough_;
-  G4Material * vacuum_beam_;
+  G4Material * vacuum_high_;
   G4Material * lipoly_;
   G4Material * polyurethane_;
   G4Material * kapton_;
@@ -59,161 +63,42 @@ private:
   // obtain above materials by our own local friendly names:
   G4Material * GetMaterialByLocalName(G4String local_name);
 
-  // Selectable Materials 
+  // Selectable Materials
+  G4Material * world_material_;
   G4Material * target_material_;
 
+  // Configurable Geometery:
+  G4double   tzero_location_;       // z position of neutron at t=0
+  G4double   detector_entrance_;    // z position of detector entrance
+  G4double   target_length_;        // target length in meters
+  G4double   target_radius_;        // radius of target ( = inner radius of cotainer)
+  G4double   container_radius_;     // out radius of container 
+  G4double   insulation_thickness_; // thickness of the foam insulation
+  G4double   window_thickness_;     // thickness of each window in containment vessel
+  G4bool     target_in_;            // is the target volume in?
+  G4bool     container_in_;         // is the target container included with target?
 
-  // inch to cm
-  G4double           fInch2cm = 2.54;
-
-     
-  // world 
-  G4VPhysicalVolume* fPWorld;
-  G4LogicalVolume*   fLWorld;
-  G4double           fWorldSizeX;
-  G4double           fWorldSizeY;
-  G4double           fWorldSizeZ;
-  G4Material*        fWorldMater;   
-  
-  //Room
-  G4VPhysicalVolume* fPhysiRoom;
-  G4LogicalVolume*   fLogicRoom;
-  G4double           fRoomSizeX;
-  G4double           fRoomSizeY;
-  G4double           fRoomSizeZ;
-  G4Material*        fRoomMater;
-  
-  //Room Volume
-  G4VPhysicalVolume* fPhysiRoomVolume;
-  G4LogicalVolume*   fLogicRoomVolume;
-  G4double           fRoomThickness;
-  
-     
-  // Insulator container
-  G4double           fInsulatorContainerLength; 
-  G4double           fInsulatorContainerInnerRadius; 
-  G4double           fInsulatorContainerOuterRadius; 
-  G4LogicalVolume*   fLogicInsulatorContainer;
-  G4VPhysicalVolume* fPhysiInsulatorContainer;
-  //G4Element*         fInsulatorContainerMater;
-  G4Material*        fInsulatorContainerMater; 
-  
-  //Insulator
-  G4double           fInsulatorLength; 
-  G4double           fInsulatorInnerRadius; 
-  G4double           fInsulatorOuterRadius; 
-  G4LogicalVolume*   fLogicInsulator;
-  G4VPhysicalVolume* fPhysiInsulator;
-  G4Material*        fInsulatorMater; 
-  
-  // liquid argon container   
-  G4double           fLArcontainerLength; 
-  G4double           fLArcontainerInnerRadius; 
-  G4double           fLArcontainerOuterRadius; 
-  G4LogicalVolume*   fLogicLArcontainer;
-  G4VPhysicalVolume* fPhysiLArcontainer;
-  G4Material*        fLArcontainerMater; 
-     
-  // liquid argon target
-  G4double           fTargetLength; 
-  G4double           fTargetRadius; 
-  G4LogicalVolume*   fLogicTarget;
-  G4VPhysicalVolume* fPhysiTarget;
-  G4Material*        fTargetMater; 
-  
-  // kapton window
-  G4double           fKaptonThickness;
-  G4Material*        fkapton;  
-  G4LogicalVolume*   fLogicKapWin;
-  
-  // kapton window R1
-  G4VPhysicalVolume* fPhysiKapWinR1;
-  
-  // kapton window R2 
-  G4VPhysicalVolume* fPhysiKapWinR2;
-  
-  // kapton window L1 
-  G4VPhysicalVolume* fPhysiKapWinL1;
-  
-  // kapton window L2
-  G4VPhysicalVolume* fPhysiKapWinL2;
-  
-  //Fill and vent lines
-  G4double           fPipeRadius;
-  G4double           fPipeLength;
-  //G4RotationMatrix*   PipeRot;
-  //Fill Line
-  G4LogicalVolume*   fLogiclArFillLineIN;
-  G4VPhysicalVolume* fPhysilArFillLineIN;
-  G4LogicalVolume*   fLogiclArFillLineOUT;
-  G4VPhysicalVolume* fPhysilArFillLineOUT;
-  //Vent Line
-  G4LogicalVolume*   fLogiclArVentLineIN;
-  G4VPhysicalVolume* fPhysilArVentLineIN;
-  G4LogicalVolume*   fLogiclArVentLineOUT;
-  G4VPhysicalVolume* fPhysilArVentLineOUT;
-  
-  // Vacuum line
-  G4LogicalVolume*   fLogicVacuumLine;
-  G4VPhysicalVolume* fPhysiVacuumLine;
-  
-  //Beam Line
-  //G4double           fBeamLineRadius;
-  G4double           fBeamLineLength;
-  G4LogicalVolume*   fLogicBeamLine;
-  G4VPhysicalVolume* fPhysiBeamLine;
-  G4Material*        fBeamLineMater;
-  
-  //Beam Line Volume
-  G4double           fBeamLineRadiusOUT;
-  G4double           fBeamLineRadiusIN;
-  G4LogicalVolume*   fLogicBeamLineV;
-  G4VPhysicalVolume* fPhysiBeamLineV;
-  G4Material*        fBeamLineVolumeMater;
-  
-  // neutron collimator
-  G4double           fCollimatorShieldThickness;
-  G4double           fCollimatorSolidLength;
-  G4double           fCollimatorSolidRadius;
-  G4double           fCollimatorHollowLength;
-  G4double           fCollimatorHollowRadius;
-  G4LogicalVolume*   fLogicCollimator;
-  G4VPhysicalVolume* fPhysiCollimator;
-  G4Material*        fCollimatorMater;
-  
-  // toy neutron detector
-  G4double						fDetectorLength;
-  G4double           fDetectorRadius;
-  G4LogicalVolume*   fLogicDetector;
-  G4VPhysicalVolume* fPhysiDetector;
-  G4Material*        fDetectorMater; 
-  G4double           fDetectorPositionZ;
-  
-  // buffer container
-  G4double						fBufferLength;
-  G4double						fBufferInnerRadius;
-  G4double						fBufferOuterRadius;
-  G4LogicalVolume*   fLogicBuffer;
-  G4Material*        fBufferMater; 
-  
-  G4VPhysicalVolume* fPhysiBufferL;
-  G4VPhysicalVolume* fPhysiBufferR;
-  
-  // buffer volume
-  G4LogicalVolume*   fLogicBufferVol;
-  G4VPhysicalVolume* fPhysiBufferVolL;
-  G4VPhysicalVolume* fPhysiBufferVolR;
-  
   // UI commands:
   // - include command "/control/manual /artie/det" into .mac file for a detailed description of each command:
   G4UIdirectory*             fDetDir;
+  G4UIcmdWithAString*        fWorldMaterialCmd;
   G4UIcmdWithAString*        fTargetMaterialCmd;
-  //G4UIcmdWithADouble*        fTargetLengthCmd;
-  //G4UIcmdWithABool*          fTargetIn;
-  //G4UIcmdWithABool*          fTargetContainerIn;
-  
-  void               DefineMaterials();
-  G4VPhysicalVolume* ConstructVolumes();    
+  G4UIcmdWithADouble*        fTzeroLocationCmd;
+  G4UIcmdWithADouble*        fDetectorEntranceCmd;
+  G4UIcmdWithADouble*        fTargetLengthCmd;
+  G4UIcmdWithADouble*        fTargetRadiusCmd;  
+  G4UIcmdWithADouble*        fContainerRadiusCmd;  
+  G4UIcmdWithADouble*        fInsulationThicknessCmd;
+  G4UIcmdWithADouble*        fWindowThicknessCmd; 
+  G4UIcmdWithABool*          fTargetInCmd;
+  G4UIcmdWithABool*          fContainerInCmd;
+
+  // Divide Construction Into Steps:
+  void DefineMaterials();  
+  void ConstructHall();
+  void ConstructBeamPipe();
+  void ConstructTarget();
+  void ConstructDetector();
            
 };
 

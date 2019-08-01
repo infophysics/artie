@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "G4Material.hh"
 #include "G4NistManager.hh"
 #include "G4Box.hh"
@@ -23,9 +25,19 @@
 
 #include "DetectorConstruction.hh"
 
+const double DetectorConstruction::world_xy = 4*m;
+const double DetectorConstruction::world_z  = 200*m;
+
+
 G4Material * DetectorConstruction::GetMaterialByLocalName(G4String local_name){
-  if (local_name == "vacuum_rough"){
+  if (local_name == "vacuum_high"){
+    return vacuum_high_;
+  } else if (local_name == "vacuum_rough"){
     return vacuum_rough_;
+  } else if (local_name == "air"){
+    return air_;
+  } else if (local_name == "argon_gas"){
+    return argon_gas_;
   } else if (local_name == "argon_liquid"){
     return argon_liquid_;
   } else {
@@ -34,90 +46,152 @@ G4Material * DetectorConstruction::GetMaterialByLocalName(G4String local_name){
   }
 }
 
-void DetectorConstruction::SetNewValue(G4UIcommand* command,G4String newValue)
-{ 
+void DetectorConstruction::SetNewValue(G4UIcommand* command, G4String arg){
+  std::istringstream is((const char *) arg);
+
   if( command == fTargetMaterialCmd ){
-    G4cout << "Setting target material to :  " << newValue << "\n"; 
-    target_material_ = GetMaterialByLocalName(newValue);
+    G4cout << "Setting target material to :  " << arg << "\n"; 
+    target_material_ = GetMaterialByLocalName(arg);
+    return;
+  }
+  if( command == fWorldMaterialCmd ){
+    G4cout << "Setting world material to :  " << arg << "\n"; 
+    world_material_ = GetMaterialByLocalName(arg);
+    return;
+  }
+  if( command ==  fTzeroLocationCmd){
+    is >> tzero_location_;
+    tzero_location_ *= m;
+    G4cout << "INFO:  Set tzero location " << arg << " parsed as " << tzero_location_ << "\n";
+    return;
+  }
+  if( command ==  fDetectorEntranceCmd){
+    is >> detector_entrance_;
+    detector_entrance_ *= m;
+    G4cout << "INFO:  Set detector entrance " << arg << " parsed as " << detector_entrance_ << "\n";
+    return;
+  }
+  if( command ==  fTargetLengthCmd){
+    is >> target_length_;
+    target_length_ *= cm;
+    G4cout << "INFO:  Set target length " << arg << " parsed as " << target_length_ << "\n";
+    return;
+  }
+  if( command ==  fTargetRadiusCmd){
+    is >> target_radius_;
+    target_radius_ *= cm;
+    G4cout << "INFO:  Set target radius " << arg << " parsed as " << target_radius_ << "\n";
+    return;
+  }
+  if( command ==  fContainerRadiusCmd){
+    is >> container_radius_;
+    container_radius_ *= cm;
+    G4cout << "INFO:  Set container radius " << arg << " parsed as " << container_radius_ << "\n";
+    return;
+  }
+  if( command ==  fInsulationThicknessCmd){
+    is >> insulation_thickness_;
+    insulation_thickness_ *= cm;
+    G4cout << "INFO:  Set insulation thickness " << arg << " parsed as " << insulation_thickness_ << "\n";
+    return;
+  }
+
+  if( command ==  fWindowThicknessCmd){
+    is >> window_thickness_;
+    window_thickness_ *= cm;
+    G4cout << "INFO:  Set window thickness " << arg << " parsed as " << window_thickness_ << "\n";
+    return;
+  }
+
+  if( command ==  fTargetInCmd){
+    target_in_ = (arg == "true");
+    G4cout << "INFO:  Set target volume in flag " << arg << " parsed as " << target_in_ << "\n";
+    return;
+  }
+  if( command ==  fContainerInCmd){
+    container_in_ = (arg == "true");
+    G4cout << "INFO:  Set target container in flag " << arg << " parsed as " << container_in_ << "\n";
+    return;
   }
 }
 
 
 DetectorConstruction::DetectorConstruction()
-  :G4VUserDetectorConstruction(), G4UImessenger(), 
-   fPWorld(0), fLWorld(0), fWorldMater(0), 
-   fDetDir(0)
+  :G4VUserDetectorConstruction(), G4UImessenger()
 { 
-  DefineMaterials();  
-
   G4bool broadcast = false;
   fDetDir = new G4UIdirectory("/artie/det/",broadcast);
   fDetDir->SetGuidance("detector construction commands");
+
+  fWorldMaterialCmd = new G4UIcmdWithAString("/artie/det/world_material",this);
+  fWorldMaterialCmd->SetGuidance("Select material of the world");
+  fWorldMaterialCmd->SetParameterName("material",false);
         
   fTargetMaterialCmd = new G4UIcmdWithAString("/artie/det/target_material",this);
-  fTargetMaterialCmd->SetGuidance("Select material of the target (Vacuum or Argon)");
+  fTargetMaterialCmd->SetGuidance("Select material of the target");
   fTargetMaterialCmd->SetParameterName("material",false);
-  
-  fWorldSizeX = 4*m;
-  fWorldSizeY = 4*m;
-  fWorldSizeZ = 200*m;
 
-  //Room
-  fRoomSizeX = 2*m;
-  fRoomSizeY = 2*m;
-  fRoomSizeZ = 180*m;
+  fTzeroLocationCmd = new G4UIcmdWithADouble("/artie/det/tzero_location",this);
+  fTzeroLocationCmd->SetGuidance("Specify z position of neutron at t=0 (m)");
+  fTzeroLocationCmd->SetParameterName("position",false);
 
-  fRoomThickness = 1*m;
-  
-  // liquid argon target
-  fTargetLength = 200.*cm; 
-  fTargetRadius = 2.5*cm/2;  // DN25 (ID = 25 mm), Flange size 2-1/8" (OD)
-  
-  // liquid argon container
-  fLArcontainerLength = 200.*cm; 
-  fLArcontainerInnerRadius = fTargetRadius;
-  fLArcontainerOuterRadius = (1.+3./8)*fInch2cm/2*cm; // OD = 1-3/8"
-  
-  // kapton window
-  fKaptonThickness = 0.00762*cm; //0.1*cm; //
-  
-  // thermal insulator
-  fInsulatorLength = fLArcontainerLength+2*fKaptonThickness;
-  fInsulatorInnerRadius = fLArcontainerOuterRadius;
-  fInsulatorOuterRadius = 1.5*fInch2cm/2*cm; //1.5" OD
-  
-  // Insulator container
-  fInsulatorContainerLength = fLArcontainerLength  + 2*fKaptonThickness;
-  fInsulatorContainerInnerRadius = fLArcontainerOuterRadius;
-  fInsulatorContainerOuterRadius = 2.75*fInch2cm/2*cm; 
-  
-  
-  //Fill and vent lines
-  fPipeRadius = 2.*cm;
-  fPipeLength = 10.*cm;
- 
-  // neutron collimator to be defined
-  fCollimatorShieldThickness = 10.*cm;
-  fCollimatorHollowLength = 90.*cm;   
-  fCollimatorHollowRadius = fTargetRadius;
-  fCollimatorSolidLength = fCollimatorHollowLength + fCollimatorShieldThickness;    
-  fCollimatorSolidRadius = fCollimatorHollowRadius + fCollimatorShieldThickness;    
+  fDetectorEntranceCmd = new G4UIcmdWithADouble("/artie/det/detector_entrance",this);
+  fDetectorEntranceCmd->SetGuidance("Specify z position of the detector entrance (m)");
+  fDetectorEntranceCmd->SetParameterName("position",false);
 
-  
-  // toy neutron detector
-  fDetectorLength = 20.*cm;
-  fDetectorRadius = 2.*cm; // not known
-  fDetectorPositionZ = 70.*m;
-  
-  // Buffer volume
-  fBufferLength = 5*cm;    
-  fBufferInnerRadius = fLArcontainerInnerRadius;
-  fBufferOuterRadius = fLArcontainerOuterRadius;
+  fTargetLengthCmd = new G4UIcmdWithADouble("/artie/det/target_length",this);
+  fTargetLengthCmd->SetGuidance("Specify length of the target (cm)");
+  fTargetLengthCmd->SetParameterName("length",false);
 
-  //Beam Line
-  fBeamLineLength = fDetectorPositionZ - 0.5*fDetectorLength - 0.5*fInsulatorContainerLength- fBufferLength;
-  fBeamLineRadiusOUT = 20.*cm;
-  fBeamLineRadiusIN = 18.*cm;
+  fTargetRadiusCmd = new G4UIcmdWithADouble("/artie/det/target_radius",this);
+  fTargetRadiusCmd->SetGuidance("Specify radius of the target inner volume (cm)");
+  fTargetRadiusCmd->SetParameterName("radius",false);
+
+  fContainerRadiusCmd = new G4UIcmdWithADouble("/artie/det/container_radius",this);
+  fContainerRadiusCmd->SetGuidance("Specify outer radius of the target container (cm)");
+  fContainerRadiusCmd->SetParameterName("radius",false);
+
+  fInsulationThicknessCmd = new G4UIcmdWithADouble("/artie/det/insulation_thickness",this);
+  fInsulationThicknessCmd->SetGuidance("Specify thickness of the insulation wrapped around target container (cm)");
+  fInsulationThicknessCmd->SetParameterName("thickness",false);
+
+  fWindowThicknessCmd = new G4UIcmdWithADouble("/artie/det/window_thickness",this);
+  fWindowThicknessCmd->SetGuidance("Specify thickness of each window in the containment vessel (cm)");
+  fWindowThicknessCmd->SetParameterName("thickness",false);
+
+  fTargetInCmd = new G4UIcmdWithABool("/artie/det/target_in",this);
+  fTargetInCmd->SetGuidance("Is the target volume in place?");
+  fTargetInCmd->SetParameterName("in",false);
+
+  fContainerInCmd = new G4UIcmdWithABool("/artie/det/container_in",this);
+  fContainerInCmd->SetGuidance("Is the target container in place?");
+  fContainerInCmd->SetParameterName("in",false);
+
+  world_    = NULL;
+  target_   = NULL;
+  detector_ = NULL;
+
+  DefineMaterials();  
+
+  // set default values:
+  world_material_ = air_;
+  target_material_ = argon_liquid_;
+
+  tzero_location_    = -30 * m;
+  detector_entrance_ = 70 * m;
+
+  target_length_ = 200 * cm;
+  // Target Container Dimensions from Specs:
+  // DN25 (ID = 25 mm), Flange size 2-1/8" (OD)
+  // OD = 1-3/8"
+  // (1 + 3./8.0) * 2.54 = 3.4925 cm
+  target_radius_        = 2.50 * cm / 2.0;
+  container_radius_     = 3.49 * cm / 2.0;
+  insulation_thickness_ = 10.0 * cm;
+  window_thickness_     = 0.00762*cm;
+
+  target_in_ = true;
+  container_in_ = true;
 }
 
 DetectorConstruction::~DetectorConstruction()
@@ -129,17 +203,8 @@ DetectorConstruction::~DetectorConstruction()
   //delete fTargetContainerIn;
 }
 
-G4VPhysicalVolume* DetectorConstruction::Construct()
-{
-  return ConstructVolumes();
-}
-
-
-
 void DetectorConstruction::DefineMaterials()
 {
-  const G4double ROOM_TEMP = 273 * kelvin;
-
   G4NistManager* man = G4NistManager::Instance();
   G4Element* C = man->FindOrBuildElement("C");
   G4Element* H = man->FindOrBuildElement("H");
@@ -158,14 +223,15 @@ void DetectorConstruction::DefineMaterials()
   kapton_      = man->FindOrBuildMaterial("G4_KAPTON");
 
   // Define Custom Materials
-  // Vacuum   --  NEEDS UPDATE TO ROUGH VACUUM
-  G4double atomicNumber = 1.;
-  G4double massOfMole = 1.008*g/mole;
-  G4double density = 1.e-25*g/cm3;
-  G4double pressure = 3.e-18*pascal;
-  // these will likely differ, but setting the same for now:
-  vacuum_rough_ = new G4Material("Vacuum", atomicNumber, massOfMole, density, kStateGas, ROOM_TEMP, pressure);
-  vacuum_beam_  = vacuum_rough_;
+
+  // Vacuum: (as low density air)
+  // From ideal gas law:  P/density = CONST
+  G4double density_rough = air_->GetDensity() * (0.1);
+  G4double density_high  = air_->GetDensity() * (1.0E-11);
+  vacuum_high_ = new G4Material("vacuum_high", density_high, 1);
+  vacuum_high_->AddMaterial(air_, 1.0);
+  vacuum_rough_ = new G4Material("vacuum_rough", density_rough, 1);
+  vacuum_rough_->AddMaterial(air_, 1.0);    
 
  //Lithium Polyethylene
  G4Material* polyethylene = man->FindOrBuildMaterial("G4_POLYETHYLENE");
@@ -185,420 +251,109 @@ void DetectorConstruction::DefineMaterials()
 
 
 
-G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
+
+void DetectorConstruction::PrintParameters()
 {
+  G4cout << "World material is " << world_->GetMaterial()->GetName() << "\n";
+  G4cout << "Target material is " << target_->GetMaterial()->GetName() << "\n";
+  G4cout << "Target length is " << target_length_ / m << " m\n";
+  G4double flight_path = detector_entrance_ - tzero_location_;
+  G4cout << "Neutron Flight Path is " <<  flight_path / m << " m\n";
 
-  G4cout << "Building detector with target material " << target_material_->GetName() << "\n";
+
+}
 
 
+void DetectorConstruction::ConstructHall(){
 
+}
 
-    // Obsolete:  hard-code materials to defined materials or use a defined switchable material...
-  // world mater
-  fWorldMater = air_;//
+void DetectorConstruction::ConstructBeamPipe(){
+  // the beam pipe goes from negative infinity to the detector with a gap to accomodate the target
+  static const double beam_radius_inner = 18*cm;
+  //static const double beam_radius_outer = 20*cm;
 
-  //Room Wall Mater
-  fRoomMater = concrete_;
-  
-  // insulator container
-  fInsulatorContainerMater = stainless_;
-  
-  // insulator
-  fInsulatorMater = polyurethane_; 
-  
-  // LAr container
-  fLArcontainerMater = stainless_; 
-  	
-  // neutron collimator
-  fCollimatorMater = lipoly_;
-  
-  // neutron detector
-  fDetectorMater = water_;
+  static const double gap = 2.5 * m;  // gap to accommodate target
+  double pos_a = -world_z / 2.0;
+  double pos_b = -gap / 2.0;
+  double pos_c = gap / 2.0;
+  double pos_d = detector_entrance_;
 
-  // kapton
-  fkapton  = kapton_;
+  double left_halflength  = (pos_b - pos_a) / 2.0;
+  double left_position    = (pos_a + pos_b) / 2.0; 
+  double right_halflength  = (pos_d - pos_c) / 2.0;
+  double right_position    = (pos_d + pos_c) / 2.0; 
 
-  //Beam Line
-  fBeamLineMater = stainless_;
+  G4Tubs* left_beam_s = new G4Tubs("left_beam_s", 0, beam_radius_inner, left_halflength, 0.,CLHEP::twopi);   
+  G4LogicalVolume* left_beam_l = new G4LogicalVolume(left_beam_s, vacuum_high_, "left_beam_l");                                    
+  new G4PVPlacement(0, G4ThreeVector(0,0,left_position), left_beam_l, "left_beam_p", world_, false, 0);
 
-  //Beam Line Volume
-  fBeamLineVolumeMater = vacuum_beam_;
-  
-  // Buffer volume
-  fBufferMater = argon_gas_; 
+  G4Tubs* right_beam_s = new G4Tubs("right_beam_s", 0, beam_radius_inner, right_halflength, 0.,CLHEP::twopi);   
+  G4LogicalVolume* right_beam_l = new G4LogicalVolume(right_beam_s, vacuum_high_, "right_beam_l");                                    
+  new G4PVPlacement(0, G4ThreeVector(0,0,right_position), right_beam_l, "right_beam_p", world_, false, 0);
 
+}
+
+void DetectorConstruction::ConstructTarget(){
+  G4cout << "target_in_:  " << target_in_ << "\n";
+  if (target_in_){
+    G4Tubs* solid = new G4Tubs("Target_s", 0, target_radius_, 0.5*target_length_, 0.,CLHEP::twopi);   
+    target_ = new G4LogicalVolume(solid, target_material_, "Target_l");                                    
+    new G4PVPlacement(0, G4ThreeVector(), target_, "Target_p", world_, false, 0);
+  }                       
+  if (container_in_){
+    // The stainless steel containment vessel:
+    G4Tubs* container_s  = new G4Tubs("Container_s", target_radius_, container_radius_, 0.5*target_length_, 0.,CLHEP::twopi);
+    G4LogicalVolume* container_l = new G4LogicalVolume(container_s, stainless_, "Container_l");   
+    new G4PVPlacement(0, G4ThreeVector(), container_l, "Container_p", world_, false, 0);
+
+    // The wrapped insulation:
+    G4Tubs* insulation_s = new G4Tubs("Insulation_s", container_radius_, container_radius_ + insulation_thickness_, 0.5*target_length_, 0.,CLHEP::twopi);
+    G4LogicalVolume* insulation_l = new G4LogicalVolume(insulation_s, polyurethane_, "Insulation_l");   
+    new G4PVPlacement(0, G4ThreeVector(), insulation_l, "Insulation_p", world_, false, 0);
+
+    // The windows:
+    G4Tubs* window_s = new G4Tubs("Window_s", 0, container_radius_, 0.5*window_thickness_, 0., CLHEP::twopi);
+    G4LogicalVolume* window_l = new G4LogicalVolume(window_s, kapton_, "Window_l");
+    new G4PVPlacement(0,G4ThreeVector(0,0, -(target_length_+window_thickness_)*0.5),window_l, "left_window_p", world_, false, 0);
+    new G4PVPlacement(0,G4ThreeVector(0,0, +(target_length_+window_thickness_)*0.5),window_l, "rght_window_p", world_, false, 0);
+
+  }
+}
+
+void DetectorConstruction::ConstructDetector(){
+  static const double detector_length  = 20.*cm;  
+  static const double detector_radius  =  2.*cm;  // not known  
+  double z_center = detector_entrance_ + detector_length * 0.5;
+
+  G4Tubs* solid = new G4Tubs("Detector_s", 0, detector_radius, 0.5*detector_length, 0.,CLHEP::twopi);   
+  detector_ = new G4LogicalVolume(solid, water_, "Detector_l");                                      
+  new G4PVPlacement(0, G4ThreeVector(0., 0., z_center), detector_, "Detector_p", world_, false, 0);                                
+
+}
+
+G4VPhysicalVolume* DetectorConstruction::Construct(){
   // Cleanup old geometry
   G4GeometryManager::GetInstance()->OpenGeometry();
   G4PhysicalVolumeStore::GetInstance()->Clean();
   G4LogicalVolumeStore::GetInstance()->Clean();
   G4SolidStore::GetInstance()->Clean();
 
-  // world
-  G4Box*
-  sWorld = new G4Box("Container", 
-                   fWorldSizeX/2,fWorldSizeY/2,fWorldSizeZ/2); 
 
-  fLWorld = new G4LogicalVolume(sWorld, 
-                             fWorldMater,
-                             fWorldMater->GetName()); 
+  G4Box* world_solid = new G4Box("Container", world_xy/2, world_xy/2, world_z/2);
+  world_= new G4LogicalVolume(world_solid, world_material_, world_material_->GetName());
+  G4VPhysicalVolume* physical_world =  
+    new G4PVPlacement(0, G4ThreeVector(), world_, world_material_->GetName(), 0, false, 0);
 
-  fPWorld = new G4PVPlacement(0, 
-                            G4ThreeVector(),            
-                            fLWorld,                    
-                            fWorldMater->GetName(),     
-                            0,                          
-                            false,                      
-                            0);    
+  ConstructHall();
+  ConstructBeamPipe();
+  ConstructTarget();
+  ConstructDetector();
 
-  //Room
-  G4Box*
-  sRoom = new G4Box("Room_s", fRoomSizeX/2, fRoomSizeY/2, fRoomSizeZ/2);
-
-  fLogicRoom = new G4LogicalVolume(sRoom, fRoomMater, "Room_l");
-
-  fPhysiRoom = new G4PVPlacement(0, 
-                                G4ThreeVector(),
-                                fLogicRoom,
-                                "Room_p",
-                                fLWorld,
-                                false,
-                                0);
-
-  //Room Volume
-  G4Box*
-  sRoomVolume = new G4Box("RoomVolume_s", (fRoomSizeX - fRoomThickness)/2, (fRoomSizeY - fRoomThickness)/2, (fRoomSizeZ - fRoomThickness)/2);
-
-  fLogicRoomVolume = new G4LogicalVolume(sRoomVolume, fWorldMater, "RoomVolume_l");
-
-  fPhysiRoomVolume = new G4PVPlacement(0,
-                                G4ThreeVector(),
-                                fLogicRoomVolume,
-                                "RoomVolume_p",
-                                fLogicRoom,
-                                false,
-                                0);
-
-  
-  // // Insulator container
-  // G4Tubs* 
-  // sInsulatorContainer = new G4Tubs("InsulatorContainer_s",                                               
-  //                       fInsulatorContainerInnerRadius, fInsulatorContainerOuterRadius, 0.5*fInsulatorContainerLength, 0.,CLHEP::twopi);   
-
-  // fLogicInsulatorContainer = new G4LogicalVolume(sInsulatorContainer,     
-  //                                     fInsulatorContainerMater,     
-  //                                     "InsulatorContainer_l");      
-
-  // fPhysiInsulatorContainer = new G4PVPlacement(0,                   
-  //                           				G4ThreeVector(),          
-  //                                   fLogicInsulatorContainer ,      
-  //                                   "InsulatorContainer_p",         
-  //                                   fLWorld,                  
-  //                                   false,                    
-  //                                   0);                                                      
-  // Insulator
-  G4Tubs* 
-  sInsulator = new G4Tubs("Insulator_s",                                               
-                        fInsulatorInnerRadius, fInsulatorOuterRadius, 0.5*fInsulatorLength, 0.,CLHEP::twopi);   
-
-  fLogicInsulator = new G4LogicalVolume(sInsulator,     
-                                      fInsulatorMater,     
-                                      "Insulator_l");      
-
-  fPhysiInsulator = new G4PVPlacement(0,                   
-                            				G4ThreeVector(),          
-                                    fLogicInsulator ,      
-                                    "Insulator_p",         
-                                    fLogicRoomVolume,       
-                                    false,                    
-                                    0);                       
-                                    
-  // LAr container
-  G4Tubs* 
-  sLArcontainer = new G4Tubs("LArcontainer_s",                                               
-                        fLArcontainerInnerRadius, fLArcontainerOuterRadius, 0.5*fLArcontainerLength, 0.,CLHEP::twopi);   
-
-  fLogicLArcontainer = new G4LogicalVolume(sLArcontainer,   
-                                      fLArcontainerMater,   
-                                      "LArcontainer_l");    
-
-  fPhysiLArcontainer = new G4PVPlacement(0,                 
-                            				G4ThreeVector(),        
-                                    fLogicLArcontainer ,    
-                                    "LArcontainer_p",       
-                                    fLogicRoomVolume,     
-                                    false,                  
-                                    0);                                                      
-  
-  // liquid argon target
-  G4Tubs* 
-  sTarget = new G4Tubs("Target_s",                                               
-                        0, fTargetRadius, 0.5*fTargetLength, 0.,CLHEP::twopi);   
-
-  fLogicTarget = new G4LogicalVolume(sTarget,                                    
-                                      target_material_,                              
-                                      "Target_l");           
-
-  fPhysiTarget = new G4PVPlacement(0,                        
-                            				G4ThreeVector(),         
-                                    fLogicTarget ,           
-                                    "Target_p",              
-                                    fLogicRoomVolume,    //fLWorld, //  
-                                    false,                   
-                                    0);     
-                                    
-  // Kapton Window logic volume
-  G4Tubs*
-  sKapWin = new G4Tubs("KapWin_s", 0, fLArcontainerOuterRadius, 0.5*fKaptonThickness, 0., CLHEP::twopi);
-
-  fLogicKapWin = new G4LogicalVolume(sKapWin, fkapton, "KapWin_l");
-  
-  
-  //Kapton Window L
-  fPhysiKapWinL1 = new G4PVPlacement(0,
-  									G4ThreeVector(0,0, -fTargetLength*0.5-0.5*fKaptonThickness), 
-  	                                fLogicKapWin,           
-                                    "KapWinL1_p",
-                                    fLogicRoomVolume,      
-                                    false,                   
-                                    0);     
-  
-  //Kapton Window R
-  fPhysiKapWinR1 = new G4PVPlacement(0, 
-  									G4ThreeVector(0,0, fTargetLength*0.5+0.5*fKaptonThickness), 
-  	                                fLogicKapWin ,          
-                                    "KapWinR1_p",              
-                                    fLogicRoomVolume,  
-                                    false, 
-                                    1);
-
-  // G4RotationMatrix* PipeRot = new G4RotationMatrix;
-  // PipeRot->rotateY(90.0*deg);
-/*
-  //lAr fill line In
-  G4Tubs*
-  slArFillLineIN = new G4Tubs("lArFillLineIN_s", 0, fPipeRadius, 0.25*fPipeLength, 0., CLHEP::twopi);
-
-  fLogiclArFillLineIN = new G4LogicalVolume(slArFillLineIN, fInsulatorContainerMater, "lArFillLineIN_l");
-
-  fPhysilArFillLineIN = new G4PVPlacement(PipeRot, 
-  									G4ThreeVector(fLArcontainerRadius+0.25*fPipeLength, 0, 0.25*fTargetLength), 
-  	                                fLogiclArFillLineIN,           
-                                    "lArFillLineIN_p",              
-                                    fLogicInsulator,      
-                                    false,                   
-                                    0);
-
-  //lAr fill line Out
-  G4Tubs*
-  slArFillLineOUT = new G4Tubs("lArFillLineOUT_s", 0, fPipeRadius, 0.25*fPipeLength, 0., CLHEP::twopi);
-
-  fLogiclArFillLineOUT = new G4LogicalVolume(slArFillLineOUT, fInsulatorContainerMater, "lArFillLineOUT_l");
-
-  fPhysilArFillLineOUT = new G4PVPlacement(PipeRot, 
-  									G4ThreeVector(fInsulatorContainerRadius + 0.25*fPipeLength, 0, 0.25*fTargetLength), 
-  	                                fLogiclArFillLineOUT ,           
-                                    "lArFillLineOUT_p",              
-                                    fLWorld,      
-                                    false,                   
-                                    0);
-
-
-  //lAr Vent Line IN
-  G4Tubs*
-  slArVentLineIN = new G4Tubs("lArVentLineIN_s", 0, fPipeRadius, 0.25*fPipeLength, 0., CLHEP::twopi);
-
-  fLogiclArVentLineIN = new G4LogicalVolume(slArVentLineIN, fInsulatorContainerMater, "lArVentLineIN_l");
-
-  fPhysilArVentLineIN = new G4PVPlacement(PipeRot, 
-  									G4ThreeVector(fLArcontainerRadius + 0.25*fPipeLength, 0, -0.25*fTargetLength), 
-  	                                fLogiclArVentLineIN ,           
-                                    "lArVentLineIN_p",              
-                                    fLogicInsulator,      
-                                    false,                   
-                                    0);
-
-  //lAr Vent Line Out
-  G4Tubs*
-  slArVentLineOUT = new G4Tubs("lArVentLineOUT_s", 0, fPipeRadius, 0.25*fPipeLength, 0., CLHEP::twopi);
-
-  fLogiclArVentLineOUT = new G4LogicalVolume(slArVentLineOUT, fInsulatorContainerMater, "lArVentLineOUT_l");
-
-  fPhysilArVentLineOUT = new G4PVPlacement(PipeRot, 
-  									G4ThreeVector(fInsulatorContainerRadius + 0.25*fPipeLength, 0, -0.25*fTargetLength), 
-  	                                fLogiclArVentLineOUT ,           
-                                    "lArVentLineOUT_p",              
-                                    fLWorld,      
-                                    false,                   
-                                    0);
-
-  //lAr Vacuum Line
-  G4Tubs*
-  sVacuumLine = new G4Tubs("VacuumLine_s", 0, fPipeRadius, 0.25*fPipeLength, 0., CLHEP::twopi);
-
-  fLogicVacuumLine = new G4LogicalVolume(sVacuumLine, fInsulatorContainerMater, "VacuumLine_l");
-
-  fPhysiVacuumLine = new G4PVPlacement(PipeRot, 
-  									G4ThreeVector(-fInsulatorContainerRadius - 0.25*fPipeLength, 0, 0), 
-  	                                fLogicVacuumLine ,           
-                                    "VacuumLine_p",              
-                                    fLWorld,      
-                                    false,                   
-                                    0);
-*/
-  //Beam line
-  G4Tubs*
-  sBeamLine = new G4Tubs("BeamLine_s", 0, fBeamLineRadiusOUT, 0.5*fBeamLineLength, 0., CLHEP::twopi);
-
-  fLogicBeamLine = new G4LogicalVolume(sBeamLine, fBeamLineMater, "BeamLine_l");
-
-  fPhysiBeamLine = new G4PVPlacement(0,
-                    G4ThreeVector(0, 0, 0.5*fInsulatorContainerLength + fBufferLength + 0.5*fBeamLineLength),
-                                    fLogicBeamLine ,           
-                                    "BeamLine_p",              
-                                    fLogicRoomVolume,      
-                                    false,                   
-                                    0);
-
-  //Beam line Volume
-  G4Tubs*
-  sBeamLineV = new G4Tubs("BeamLineV_s", 0, fBeamLineRadiusIN, 0.5*fBeamLineLength, 0., CLHEP::twopi);
-
-  fLogicBeamLineV = new G4LogicalVolume(sBeamLineV, fBeamLineVolumeMater, "BeamLineV_l");
-
-  fPhysiBeamLineV = new G4PVPlacement(0, 
-                    G4ThreeVector(0, 0, 0), 
-                                    fLogicBeamLineV ,           
-                                    "BeamLineV_p",              
-                                    fLogicBeamLine,      
-                                    false,                   
-                                    0);
-//
-//
-//  // neutron collimator
-//  G4Tubs*
-//  sCollimatorSolid = new G4Tubs("CollimatorSolid",                        
-//                   0, fCollimatorSolidRadius, fCollimatorSolidLength/2, 0.,CLHEP::twopi ); 
-//  G4Tubs*
-//  sCollimatorHollow = new G4Tubs("CollimatorHollow",                        
-//                   0, fCollimatorHollowRadius, fCollimatorHollowLength/2, 0.,CLHEP::twopi );  
-//  G4ThreeVector zTransCollimator(0, 0, -fCollimatorShieldThickness/2); 
-//  G4SubtractionSolid* sCollimator =
-//  new G4SubtractionSolid("CollimatorSolid-CollimatorHollow", sCollimatorSolid, sCollimatorHollow, 0, zTransCollimator); 
-//  
-//  fLogicCollimator = new G4LogicalVolume(sCollimator,                                    
-//                                      fCollimatorMater,                              
-//                                      "sCollimator_l");           
-//
-//  fPhysiCollimator = new G4PVPlacement(0,                        
-//                            				G4ThreeVector(0., 0., fDetectorPositionZ + fDetectorLength/2 + fCollimatorShieldThickness - fCollimatorSolidLength/2),         
-//                                    fLogicCollimator ,           
-//                                    "sCollimator_p",              
-//                                    fLWorld,      
-//                                    false,                   
-//                                    0);                      
-// 
-
-  G4Tubs* 
-  sDetector = new G4Tubs("Detector_s",                                               
-                        0, fDetectorRadius, 0.5*fDetectorLength, 0.,CLHEP::twopi);   
-
-  fLogicDetector = new G4LogicalVolume(sDetector,                                    
-                                      fDetectorMater,                              
-                                      "Detector_l");           
-
-  fPhysiDetector = new G4PVPlacement(0,                        
-                            				G4ThreeVector(0., 0., fDetectorPositionZ),         
-                                    fLogicDetector ,           
-                                    "Detector_p",              
-                                    fLogicRoomVolume,      
-                                    false,                   
-                                    0);  
- 
- // buffer Container 
-  G4Tubs* 
-  sBuffer = new G4Tubs("Buffer_s",                                               
-                        fBufferInnerRadius, fBufferOuterRadius, 0.5*fBufferLength, 0.,CLHEP::twopi);   
-
-  fLogicBuffer = new G4LogicalVolume(sBuffer,                                    
-                                      fLArcontainerMater,                              
-                                      "Buffer_l");           
-
-  fPhysiBufferL = new G4PVPlacement(0,                        
-                            				G4ThreeVector(0., 0., -fInsulatorContainerLength/2-fBufferLength/2),         
-                                    fLogicBuffer ,           
-                                    "Buffer_p",              
-                                    fLogicRoomVolume,      
-                                    false,                   
-                                    0);  
-  fPhysiBufferR = new G4PVPlacement(0,                        
-                            				G4ThreeVector(0., 0., fInsulatorContainerLength/2+fBufferLength/2),         
-                                    fLogicBuffer ,           
-                                    "Buffer_p",              
-                                    fLogicRoomVolume,      
-                                    false,                   
-                                    1); 
-
-  //buffer Volume
-
-  G4Tubs* 
-  sBufferVol = new G4Tubs("BufferVol_s",                                               
-                        0, fBufferInnerRadius, 0.5*fBufferLength, 0.,CLHEP::twopi);   
-
-  fLogicBufferVol = new G4LogicalVolume(sBufferVol,                                    
-                                      fBufferMater,                              
-                                      "BufferVol_l");           
-
-  fPhysiBufferVolL = new G4PVPlacement(0,                        
-                                    G4ThreeVector(0., 0., 0),         
-                                    fLogicBufferVol ,           
-                                    "BufferVol_p",              
-                                    fLogicRoomVolume,      
-                                    false,                   
-                                    0);  
-  fPhysiBufferVolR = new G4PVPlacement(0,                        
-                                    G4ThreeVector(0., 0., 0),         
-                                    fLogicBufferVol ,           
-                                    "BufferVol_p",              
-                                    fLogicRoomVolume,      
-                                    false,                   
-                                    1);
-
-
-                                               
-  
-  // // set VisAttributes
-  // fLWorld->SetVisAttributes(G4VisAttributes::GetInvisible()); 
-  // G4VisAttributes* VisAttInsulatorContainer= new G4VisAttributes(G4Colour(0.0, 1.0, 1.0)); // cyan
-  // fLogicInsulatorContainer->SetVisAttributes(VisAttInsulatorContainer);  
-  // G4VisAttributes* VisAttInsulator= new G4VisAttributes(G4Colour(1.0, 0.0, 1.0)); // magenta 
-  // fLogicInsulator->SetVisAttributes(VisAttInsulator);  
-  // G4VisAttributes* VisAttLArcontainer= new G4VisAttributes(G4Colour(0.0, 1.0, 0.0)); // green
-  // fLogicLArcontainer->SetVisAttributes(VisAttLArcontainer);
-  // G4VisAttributes* VisAttTarget= new G4VisAttributes(G4Colour(0.0, 0.0, 1.0)); // blue
-  // fLogicTarget->SetVisAttributes(VisAttTarget);   
-  // G4VisAttributes* VisAttDetector= new G4VisAttributes(G4Colour(1.0, 1.0, 0.0)); // yellow
-  // fLogicDetector->SetVisAttributes(VisAttDetector);
-  // G4VisAttributes* VisAttKapWin= new G4VisAttributes(G4Colour(1.0, 1.0, 0.0)); // yellow
-  // fLogicKapWin->SetVisAttributes(VisAttKapWin);
-  // G4VisAttributes* VisAttBeamLineV= new G4VisAttributes(G4Colour(1.0,0.0,0.0)); // red
-  // fLogicBeamLineV->SetVisAttributes(VisAttBeamLineV);          
-    
   PrintParameters();
-  
-  //always return the root volume
-  //
-  return fPWorld;
+
+  return physical_world;
 }
-
-
-
-void DetectorConstruction::PrintParameters()
-{
-  G4cout << "\n The World is " << G4BestUnit(fWorldSizeZ,"Length")
-         << " of " << fWorldMater->GetName() 
-         << "\n \n" << fWorldMater << G4endl;
-}
-
 
 
 
