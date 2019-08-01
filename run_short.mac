@@ -9,25 +9,19 @@
 /control/verbose 2
 /run/verbose 2
 /tracking/verbose 0
-
+#
 # this will dump the entire list of commands:
 #/control/manual /
-
+#
 /analysis/ntuple_filename short.root
-
 #
 /testhadr/phys/thermalScattering true
 #
-
 /run/initialize
 #/artie/det/setMat Vacuum
-/artie/det/setMat G4_lAr
+/artie/det/target_material G4_lAr
 #
 /process/list
-#
-#
-/gun/particle neutron
-/gun/energy 2 MeV
 #
 /run/printProgress 200
 #

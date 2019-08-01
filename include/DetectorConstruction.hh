@@ -8,10 +8,9 @@
 class G4LogicalVolume;
 class G4Material;
 class G4UIdirectory;
-class G4UIcommand;
 class G4UIcmdWithAString;
-class G4UIcmdWithADoubleAndUnit;
-class G4UIcmdWithoutParameter;
+class G4UIcmdWithADouble;
+class G4UIcmdWithABool;
 
 class DetectorConstruction : public G4VUserDetectorConstruction, public G4UImessenger
 {
@@ -24,13 +23,13 @@ public:
   // UI Messenger Interface (for setting parameters):
   virtual void SetNewValue(G4UIcommand*, G4String);
   
-  void SetSize     (G4double);              
-  void SetMaterial (G4String);            
 
-  const G4VPhysicalVolume* GetWorld()      {return fPWorld;};           
+
+  //void SetMaterial (G4String);            
+  //const G4VPhysicalVolume* GetWorld()      {return fPWorld;};           
                     
-  G4double           GetSize()       {return fWorldSizeX;}; //usless function (J.Wang)     
-  G4Material*        GetMaterial()   {return fWorldMater;};
+  //G4double           GetSize()       {return fWorldSizeX;}; //usless function (J.Wang)     
+  //G4Material*        GetMaterial()   {return fWorldMater;};
      
   const G4LogicalVolume* GetLogicWorld()           {return fLWorld;};   
   const G4LogicalVolume* GetLogicDetector()        {return fLogicDetector;};  
@@ -41,12 +40,32 @@ public:
   void               PrintParameters();
   
 private:
-  
+    
+  // Defined Materials 
+  G4Material * air_; 
+  G4Material * water_; 
+  G4Material * argon_liquid_;
+  G4Material * argon_gas_;
+  G4Material * stainless_;
+  G4Material * aluminum_;
+  G4Material * graphite_;
+  G4Material * vacuum_rough_;
+  G4Material * vacuum_beam_;
+  G4Material * lipoly_;
+  G4Material * polyurethane_;
+  G4Material * kapton_;
+  G4Material * concrete_;
+
+  // obtain above materials by our own local friendly names:
+  G4Material * GetMaterialByLocalName(G4String local_name);
+
+  // Selectable Materials 
+  G4Material * target_material_;
+
+
   // inch to cm
   G4double           fInch2cm = 2.54;
-  
-  // Vacuum
-  G4Material* fVacuum;
+
      
   // world 
   G4VPhysicalVolume* fPWorld;
@@ -185,12 +204,13 @@ private:
   G4VPhysicalVolume* fPhysiBufferVolL;
   G4VPhysicalVolume* fPhysiBufferVolR;
   
-  
-  G4UIdirectory*             fTestemDir;
+  // UI commands:
+  // - include command "/control/manual /artie/det" into .mac file for a detailed description of each command:
   G4UIdirectory*             fDetDir;
-  G4UIcmdWithAString*        fMaterCmd;
-  G4UIcmdWithADoubleAndUnit* fSizeCmd;
-  G4UIcommand*               fIsotopeCmd;    
+  G4UIcmdWithAString*        fTargetMaterialCmd;
+  //G4UIcmdWithADouble*        fTargetLengthCmd;
+  //G4UIcmdWithABool*          fTargetIn;
+  //G4UIcmdWithABool*          fTargetContainerIn;
   
   void               DefineMaterials();
   G4VPhysicalVolume* ConstructVolumes();    
