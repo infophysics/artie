@@ -26,7 +26,7 @@
 G4Material * DetectorConstruction::GetMaterialByLocalName(G4String local_name){
   if (local_name == "vacuum_rough"){
     return vacuum_rough_;
-  } else if (local_name == "argon_liquid_"){
+  } else if (local_name == "argon_liquid"){
     return argon_liquid_;
   } else {
     G4cout << "ERROR: could not find material with local name " << local_name << "\n";
@@ -48,7 +48,8 @@ DetectorConstruction::DetectorConstruction()
    fPWorld(0), fLWorld(0), fWorldMater(0), 
    fDetDir(0)
 { 
-  
+  DefineMaterials();  
+
   G4bool broadcast = false;
   fDetDir = new G4UIdirectory("/artie/det/",broadcast);
   fDetDir->SetGuidance("detector construction commands");
@@ -60,7 +61,6 @@ DetectorConstruction::DetectorConstruction()
   fWorldSizeX = 4*m;
   fWorldSizeY = 4*m;
   fWorldSizeZ = 200*m;
-  DefineMaterials();
 
   //Room
   fRoomSizeX = 2*m;
@@ -148,8 +148,8 @@ void DetectorConstruction::DefineMaterials()
   G4Element* Li = man->FindOrBuildElement("Li");
   air_         = man->FindOrBuildMaterial("G4_AIR");
   water_       = man->FindOrBuildMaterial("G4_WATER");
-  argon_gas_   = man->FindOrBuildMaterial("G4_lAr");
-  argon_liquid_ = man->FindOrBuildMaterial("G4_Ar");
+  argon_gas_   = man->FindOrBuildMaterial("G4_Ar");
+  argon_liquid_ = man->FindOrBuildMaterial("G4_lAr");
   stainless_    = man->FindOrBuildMaterial("G4_STAINLESS-STEEL");
   aluminum_    = man->FindOrBuildMaterial("G4_Al");
   //graphite_  = man->FindOrBuildMaterial("G4_GRAPHITE");
@@ -188,6 +188,12 @@ void DetectorConstruction::DefineMaterials()
 G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
 {
 
+  G4cout << "Building detector with target material " << target_material_->GetName() << "\n";
+
+
+
+
+    // Obsolete:  hard-code materials to defined materials or use a defined switchable material...
   // world mater
   fWorldMater = air_;//
 
@@ -203,9 +209,6 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
   // LAr container
   fLArcontainerMater = stainless_; 
   	
-  // liquid argon target
-  fTargetMater = argon_liquid_;
-  
   // neutron collimator
   fCollimatorMater = lipoly_;
   
@@ -332,7 +335,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructVolumes()
                         0, fTargetRadius, 0.5*fTargetLength, 0.,CLHEP::twopi);   
 
   fLogicTarget = new G4LogicalVolume(sTarget,                                    
-                                      fTargetMater,                              
+                                      target_material_,                              
                                       "Target_l");           
 
   fPhysiTarget = new G4PVPlacement(0,                        

@@ -12,18 +12,14 @@
 #
 # this will dump the entire list of commands:
 #/control/manual /
-#
-/analysis/ntuple_filename short.root
+# this will dump all processes:
+#/process/list
 #
 /testhadr/phys/thermalScattering true
-#
+#/artie/det/target_material vacuum_rough
+/artie/det/target_material argon_liquid
+/analysis/ntuple_filename short.root
 /run/initialize
-#/artie/det/setMat Vacuum
-/artie/det/target_material G4_lAr
-#
-/process/list
-#
 /run/printProgress 200
-#
 /run/beamOn 1000
 
