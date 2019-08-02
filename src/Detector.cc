@@ -186,8 +186,8 @@ Detector::Detector()
   world_material_ = air_;
   target_material_ = argon_liquid_;
 
-  tzero_location_    = -30 * m;
-  detector_entrance_ = 70 * m;
+  tzero_location_    = -1 * m;
+  detector_entrance_ = 69 * m;
 
   target_length_ = 200 * cm;
   // Target Container Dimensions from Specs:

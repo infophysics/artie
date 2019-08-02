@@ -5,6 +5,8 @@
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 #include "PrimaryGenerator.hh"
+#include "Detector.hh"
+#include "G4RunManager.hh"
 
 PrimaryGenerator::PrimaryGenerator()
 : G4VUserPrimaryGeneratorAction(),fParticleGun(0)
@@ -30,10 +32,16 @@ PrimaryGenerator::~PrimaryGenerator()
 
 void PrimaryGenerator::GeneratePrimaries(G4Event* anEvent)
 {
+  //obtain the detector (needed for tzero location)
+  const Detector* detector
+   = static_cast<const Detector*>
+    (G4RunManager::GetRunManager()->GetUserDetectorConstruction()); 
+  double tz = detector->TzeroLocation();
+
   fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0., 0., 1.));
 
   // tzero position should be taken from geometry, hard-coded for now:
-  fParticleGun->SetParticlePosition(G4ThreeVector(0.*cm,0.*cm,-30.*m));
+  fParticleGun->SetParticlePosition(G4ThreeVector(0.*cm,0.*cm,tz));
 //  fParticleGun->SetParticleEnergy(57*keV);
   //G4double e = 57*keV;//100*G4UniformRand()*keV; //
   G4double e = (40+50*G4UniformRand())*keV; //

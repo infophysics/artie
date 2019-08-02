@@ -23,16 +23,14 @@ public:
   // UI Messenger Interface (for setting parameters):
   virtual void SetNewValue(G4UIcommand*, G4String);
   
-  const G4LogicalVolume* GetLogicWorld()           {return world_;};   
-  const G4LogicalVolume* GetLogicDetector()        {return detector_;};  
-  const G4LogicalVolume* GetLogicTarget()          {return target_;};
-  //const G4LogicalVolume* GetLogicLArcontainer()    {return fLogicLArcontainer;}; 
-  //const G4LogicalVolume* GetLogicBeamLineV()       {return fLogicBeamLineV;};   
+  const G4LogicalVolume* GetLogicWorld()     const {return world_;};
+  const G4LogicalVolume* GetLogicDetector()  const {return detector_;};
+  const G4LogicalVolume* GetLogicTarget()    const {return target_;};
   
   void               PrintParameters();
 
   // location of neutrons at t=0 (hook provided for primary generator)
-  double TzeroLocation(){return tzero_location_; }
+  double TzeroLocation() const {return tzero_location_; };
 
 
   // fixed values:

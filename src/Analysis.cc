@@ -169,12 +169,9 @@ void Analysis::FillNtuple(){
 void Analysis::Step(const G4Step* step)
 {
   //obtain the detector (needed for volumes)
-  const Detector* const_detector
+  const Detector* detector
    = static_cast<const Detector*>
    (G4RunManager::GetRunManager()->GetUserDetectorConstruction()); 
-  // the current detector is not const correct, so working around this for now:
-  Detector* detector
-    = const_cast<Detector*> (const_detector);
 
   //basic step information
   const G4StepPoint* pre = step->GetPreStepPoint();   
