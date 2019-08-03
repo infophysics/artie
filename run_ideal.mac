@@ -23,5 +23,5 @@
 /analysis/ntuple_filename ideal.root
 /run/initialize
 /run/printProgress 200
-/run/beamOn 100000
+/run/beamOn 1000000
 

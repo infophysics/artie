@@ -1,6 +1,6 @@
 
-A prescription for converting a ROOT tree into a pandas dataframe, 
-suitable for use in a ROOT-free python environment.  See ACKs below.
+A prescription for converting a ROOT tree into a pandas dataframe,
+suitable for use in a ROOT-free python environment.
 
 #
 # One time installation procedure:
@@ -36,19 +36,22 @@ ls -lh vacuum.*
 -rw-r--r-- 1 mulhearn 3000 23M Aug  2 17:05 vacuum.root
 
 #
-# Example ROOT free zen-like plotting environment:
+# Install ROOT-free zen-like plotting environment:
 # 
-from pandas import read_feather
-import numpy as np
-import matplotlib.pyplot as plt
-df = read_feather("vacuum.feather")
+conda create -n zen pandas matplotlib scipy pyarrow
 
-# Proceed with ROOT-free plotting with vanilla pandas,numpy,matplotlib, and sicpy...
+# Each time:
+source $HOME/miniconda/etc/profile.d/conda.sh # (or fish or csh)
+conda activate zen
+>>> from pandas import read_feather
+>>> import numpy as np
+>>> import matplotlib.pyplot as plt
+>>> df = read_feather("vacuum.feather")
+>>> # proceed with ROOT-free plotting with vanilla pandas,numpy,matplotlib, and sicpy...
 
 #
 #  Many thanks to:
 #
 #  - https://iscinumpy.gitlab.io/post/root-conda/
-#  - the root_pandas team
-#  - the outstanding python data analysis ecosystem
+#  - https://github.com/scikit-hep/root_pandas
 #

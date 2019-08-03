@@ -8,14 +8,6 @@ EMAX  = 70
 MAX   = 1000000
 TRES  = 125 # ns
 
-def energy_from_tof(tof):
-    MN = 939*1000.0  # keV 
-    C  = 3E2         # m / mus
-    L = 100.0        # m
-    beta = (L / tof) / C
-    gamma = (1.0 / (1 - beta**2))**0.5
-    return (gamma - 1.0)*MN    
-
 df = read_feather("ideal.feather")
 tall = np.array(df.arrival_time/1000.0) # time 
 eall = np.array(df.gen_energy*1000)     # energy 
