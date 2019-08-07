@@ -1,0 +1,57 @@
+
+A prescription for converting a ROOT tree into a pandas dataframe,
+suitable for use in a ROOT-free python environment.
+
+#
+# One time installation procedure:
+#
+
+# Download the Linux installer
+wget -nv http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+# Or download the macOS installer
+# wget -nv https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh
+# Install Conda (same for macOS and Linux)
+bash miniconda.sh -b -p $HOME/miniconda
+source $HOME/miniconda/etc/profile.d/conda.sh # (or fish or csh)  
+conda create --name goodbye_root  python=3.6 root root_pandas pyarrow -c conda-forge
+conda activate goodbye_root
+
+#
+# Each time you need to convert a root tree:
+#
+source $HOME/miniconda/etc/profile.d/conda.sh # (or fish or csh)  
+conda activate goodbye_root
+# obtain your root file:
+cp ~/app/dev/artie/vacuum.root .
+python
+>>> from root_pandas import read_root
+>>> import pandas
+>>> df = read_root("vacuum.root")
+>>> df.to_feather("vacuum.feather")
+>>> .q
+
+# you are now ROOT free from here:
+ls -lh vacuum.*
+-rw-r--r-- 1 mulhearn 3000 77M Aug  2 17:07 vacuum.feather
+-rw-r--r-- 1 mulhearn 3000 23M Aug  2 17:05 vacuum.root
+
+#
+# Install ROOT-free zen-like plotting environment:
+# 
+conda create -n zen pandas matplotlib scipy pyarrow
+
+# Each time:
+source $HOME/miniconda/etc/profile.d/conda.sh # (or fish or csh)
+conda activate zen
+>>> from pandas import read_feather
+>>> import numpy as np
+>>> import matplotlib.pyplot as plt
+>>> df = read_feather("vacuum.feather")
+>>> # proceed with ROOT-free plotting with vanilla pandas,numpy,matplotlib, and sicpy...
+
+#
+#  Many thanks to:
+#
+#  - https://iscinumpy.gitlab.io/post/root-conda/
+#  - https://github.com/scikit-hep/root_pandas
+#

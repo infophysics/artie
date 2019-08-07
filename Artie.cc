@@ -2,7 +2,7 @@
 #include "G4RunManager.hh"
 #include "G4UImanager.hh"
 #include "Randomize.hh"
-#include "DetectorConstruction.hh"
+#include "Detector.hh"
 #include "PhysicsList.hh"
 #include "PrimaryGenerator.hh"
 #include "Analysis.hh"
@@ -28,7 +28,7 @@ int main(int argc,char** argv) {
 
   // Initialize:  detector, physics, generator, analysis
   G4RunManager* runManager = new G4RunManager;
-  runManager->SetUserInitialization(new DetectorConstruction());  
+  runManager->SetUserInitialization(new Detector());  
   runManager->SetUserInitialization(new PhysicsList());  
   runManager->SetUserInitialization(new PrimaryGenerator::Init()); 
   runManager->SetUserInitialization(new Analysis::Init()); 

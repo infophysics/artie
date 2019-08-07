@@ -5,7 +5,7 @@
 #
 # neutron 2 MeV; all processes
 #
-/random/setSeeds 364264876 673418543
+/random/setSeeds 317625523 706252466
 /control/verbose 2
 /run/verbose 2
 /tracking/verbose 0
@@ -16,9 +16,11 @@
 #/process/list
 #
 /testhadr/phys/thermalScattering true
-/artie/det/target_material argon_liquid
 
-/analysis/ntuple_filename argon.root
+/artie/det/world_material vacuum_high
+/artie/det/target_material argon_liquid
+/artie/det/container_in false
+/analysis/ntuple_filename ideal.root
 /run/initialize
 /run/printProgress 200
 /run/beamOn 1000000

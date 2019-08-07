@@ -9,27 +9,17 @@
 /control/verbose 2
 /run/verbose 2
 /tracking/verbose 0
-
+#
 # this will dump the entire list of commands:
 #/control/manual /
-
-/analysis/ntuple_filename argon.root
-
+# this will dump all processes:
+#/process/list
 #
 /testhadr/phys/thermalScattering true
-#
+/artie/det/target_material argon_liquid
 
+/analysis/ntuple_filename short.root
 /run/initialize
-#/testhadr/det/setMat Vacuum
-/testhadr/det/setMat G4_lAr
-#
-/process/list
-#
-#
-/gun/particle neutron
-/gun/energy 2 MeV
-#
 /run/printProgress 200
-#
 /run/beamOn 1000
 

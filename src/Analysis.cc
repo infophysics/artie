@@ -20,7 +20,7 @@
 
 #include "Analysis.hh"
 #include "PrimaryGenerator.hh"
-#include "DetectorConstruction.hh"
+#include "Detector.hh"
 
 using namespace std;
 
@@ -169,12 +169,9 @@ void Analysis::FillNtuple(){
 void Analysis::Step(const G4Step* step)
 {
   //obtain the detector (needed for volumes)
-  const DetectorConstruction* const_detector
-   = static_cast<const DetectorConstruction*>
+  const Detector* detector
+   = static_cast<const Detector*>
    (G4RunManager::GetRunManager()->GetUserDetectorConstruction()); 
-  // the current detector is not const correct, so working around this for now:
-  DetectorConstruction* detector
-    = const_cast<DetectorConstruction*> (const_detector);
 
   //basic step information
   const G4StepPoint* pre = step->GetPreStepPoint();   
@@ -190,6 +187,20 @@ void Analysis::Step(const G4Step* step)
 
   // Only consider neutrons:
   if (step->GetTrack()->GetDefinition()->GetParticleName() != "neutron") return;
+
+  // remaining analysis is only for before striking target:
+  if (arrival_time > 0){
+    return;
+  }
+  
+  // If we have just reached the detector, record the time and energy
+  G4LogicalVolume* volume = post->GetTouchableHandle()->GetVolume()->GetLogicalVolume();
+  if (step->IsFirstStepInVolume()){    
+    if (volume == detector->GetLogicDetector()){
+      arrival_e = post->GetKineticEnergy();
+      arrival_time   = step->GetTrack()->GetLocalTime();
+    }  
+  }
 
   // Keep track of how often each process occurred:
   const G4VProcess* process   = post->GetProcessDefinedStep();
@@ -215,32 +226,17 @@ void Analysis::Step(const G4Step* step)
     process_counts[procName]++; 
   }
 
+  // Quantify Scattering:
+
   // calculate delta phi, delta energy, and delta momentum.
-  G4LogicalVolume* volume = post->GetTouchableHandle()->GetVolume()->GetLogicalVolume();
   G4ThreeVector pa = pre->GetMomentumDirection();
   G4ThreeVector pb = post->GetMomentumDirection();
   double dphi = pa.angle(pb);
   double dp   = (pa - pb).mag();
   double de   = fabs(post->GetKineticEnergy() - pre->GetKineticEnergy());
 
-  // If we have reached the detector, record the time and energy
-  if (step->IsFirstStepInVolume()){    
-    if (volume == detector->GetLogicDetector()){
-      if (arrival_time == 0.0){
-	arrival_e = post->GetKineticEnergy();
-	arrival_time   = step->GetTrack()->GetLocalTime();
-      }           
-    }  
-  }
-
-  // ignore scattering that occurs after reaching the detector
-  if (arrival_time > 0){
-    return;
-  }
-  
   // The current position 
   G4ThreeVector pos = step->GetTrack()->GetPosition();
-
 
   // check for scattering (|dp| > 0):
   //  -> in target gas
