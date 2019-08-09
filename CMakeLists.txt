@@ -58,10 +58,10 @@ target_link_libraries(Artie ${Geant4_LIBRARIES} )
 # relies on these scripts being in the current working directory.
 #
 set(Artie_SCRIPTS
-    envHadronic.csh
-    envHadronic.sh 
-    run_argon_fill.mac 
-    run_vacuum_fill.mac 
+#    envHadronic.csh
+#    envHadronic.sh 
+#    run_argon_fill.mac 
+#    run_vacuum_fill.mac 
     vis.mac
   )
 

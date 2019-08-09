@@ -17,6 +17,8 @@
 #
 /testhadr/phys/thermalScattering true
 /artie/det/target_material vacuum_rough
+# can use neutron energy spectrum from a root file
+#/primaryGenerator/UseRealisticEnergy
 
 /analysis/ntuple_filename vacuum.root
 /run/initialize

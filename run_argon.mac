@@ -17,6 +17,8 @@
 #
 /testhadr/phys/thermalScattering true
 /artie/det/target_material argon_liquid
+# can use neutron energy spectrum from a root file
+#/primaryGenerator/UseRealisticEnergy
 
 /analysis/ntuple_filename argon.root
 /run/initialize

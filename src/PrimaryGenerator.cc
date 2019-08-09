@@ -9,7 +9,7 @@
 #include "G4RunManager.hh"
 
 PrimaryGenerator::PrimaryGenerator()
-: G4VUserPrimaryGeneratorAction(),fParticleGun(0)
+: G4VUserPrimaryGeneratorAction(),fParticleGun(0), fUseRealisticEnergy(false)
 {
   G4int n_particle = 1;
   fParticleGun  = new G4ParticleGun(n_particle);
@@ -22,12 +22,28 @@ PrimaryGenerator::PrimaryGenerator()
   fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0., 0., 1.));
   fParticleGun->SetParticleEnergy(57*keV);
   fParticleGun->SetParticlePosition(G4ThreeVector(0.*cm,0.*cm,0.*cm));
-
+  
+  // 
+  fMessenger = new G4GenericMessenger(this,"/primaryGenerator/", "...doc...");
+  fMessenger->DeclareMethod("UseRealisticEnergy", &PrimaryGenerator::UseRealisticEnergy, "...doc...");
 }
 
 PrimaryGenerator::~PrimaryGenerator()
 {
   delete fParticleGun;
+  if(fUseRealisticEnergy) {
+    fNeutronFile->Close();
+    delete fNeutronFile;
+  } 
+}
+
+void PrimaryGenerator::UseRealisticEnergy()
+{ 
+	std::cout<<"PrimaryGenerator::UseRealisticEnergy(): Read realistic neutron beam energy from a ROOT file"<<std::endl;
+	// Open the neutron energy file
+	fUseRealisticEnergy = true;
+  fNeutronFile = new TFile("ArtieBeam.root");
+  fNeutronEnergy = (TH1D*)fNeutronFile->Get("h_bm_ex_fit");
 }
 
 void PrimaryGenerator::GeneratePrimaries(G4Event* anEvent)
@@ -42,11 +58,12 @@ void PrimaryGenerator::GeneratePrimaries(G4Event* anEvent)
 
   // tzero position should be taken from geometry, hard-coded for now:
   fParticleGun->SetParticlePosition(G4ThreeVector(0.*cm,0.*cm,tz));
-//  fParticleGun->SetParticleEnergy(57*keV);
-  //G4double e = 57*keV;//100*G4UniformRand()*keV; //
-  G4double e = (40+50*G4UniformRand())*keV; //
+  G4double e = 0;
+  if(!fUseRealisticEnergy) e = (40+50*G4UniformRand())*keV;
+  else e = fNeutronEnergy->GetRandom()/1000*keV;
+
   fParticleGun->SetParticleEnergy(e);
-  fParticleGun->GeneratePrimaryVertex(anEvent);  
+  fParticleGun->GeneratePrimaryVertex(anEvent);
 }
 
 PrimaryGenerator::Init::Init()

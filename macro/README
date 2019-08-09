@@ -1,0 +1,18 @@
+Artie Data Analysis
+
+The ROOT plot style is defined by ArtieStyle.h and ArtieStyle.C
+
+The Artie ROOT tree interface is defined in ArtieTree.h and ArtieTree.C
+
+The Analysis macro is ArtieAnalysis.C
+
+After running the simulations for target-in setup (argon.root) and target-out setup (vacuum.root), 
+run the following command to do the analysis. 
+
+root 'ArtieAnalysis.C("argon.root", "vacuum.root")'
+
+Replace the file names with your own paths
+
+To do: Define Standard Plots for data quality monitoring
+
+
