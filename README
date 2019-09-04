@@ -65,4 +65,92 @@ when I am ready to make a PR.  To make the PR, on the github website, switch to 
 
 
 
+--Alternative: Running on your laptop -- (Jingbo Wang, Sep 4, 2019)
+
+-- ROOT and GEANT4 installations -- 
+
+You need need to install ROOT and GEANT4. Follow the instructions below: 
+
+https://root.cern.ch/building-root
+http://geant4-userdoc.web.cern.ch/geant4-userdoc/UsersGuides/InstallationGuide/html/
+
+I use ROOT5.34, but ROOT6 should work as well. My GEANT4 version is geant4.10.03. 
+
+-- setup ROOT and GEANT4 --
+
+source Path-to-your-ROOT/bin/thisroot.sh
+source Path-to-your-GEANT4-install/bin/geant4.sh
+
+-- Download the ARTIE code --
+
+The main repository is https://github.com/wangjingbo04/artie
+
+While logged in to your git account, from here:
+   https://github.com/wangjingbo04/artie
+click the Fork button and follow instructions to fork into your own repository.
+
+Clice your forked repository. From the "clone or download" button, you will see the address of your repository. 
+
+Now download your own repository with: 
+
+> git clone YourRepositoryAddress
+
+For example, > git clone git@github.com:wangjingbo04/artie.git # UseSSH
+or >git clone https://github.com/wangjingbo04/artie.git # UseHttps
+
+-- Compilation on your laptop --
+
+Now you will see the source folder called artie on your laptop. 
+
+create a build folder for the code with:
+
+> mkdir artie_build
+
+Now go to the build folder
+
+> cd artie_build
+
+Run command: 
+
+> cmake -DGeant4_DIR=Path-to-your-GEANT4-install/lib/Geant4-10.3.0/ ../artie
+> make -j 4
+
+Run ARTIE simulation in visualization mode: 
+
+> ./Artie
+
+Your GEANT4 has to be installed with OpenGL and Qt4 package. If you don't have OpenGL or Qt4, go back to the GEANT4 installation guidance. 
+
+Run ARTIE in batch mode: 
+Copy the macro files with command: 
+
+> cp ../artie/run_argon.mac .
+> cp ../artie/run_vacuum.mac .
+
+Copy the MCNP ROOT file from the source folder. This file includes the beam neutron spectrum and the moderator response function
+
+> cp ../artie/data/resolution13a.root .
+
+Then do: 
+
+> ./Artie run_argon.mac
+> ./Artie run_vacuum.mac
+
+-- Analysis with ROOT macros --
+
+See artie/macro/README
+
+-- Keeping up to date and making a PR --
+
+See Mike's instruction above. We prefer to do the development on our own folked repository and then make a pull request to the main repository.
+
+Please let me know if you have any trouble running the code on your laptop (my email: jiowang@ucdavis.edu)
+
+
+
+
+
+
+
+
 

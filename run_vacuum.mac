@@ -17,11 +17,10 @@
 #
 /testhadr/phys/thermalScattering true
 /artie/det/target_material vacuum_rough
-# can use neutron energy spectrum from a root file
-#/primaryGenerator/UseRealisticEnergy
+/primaryGenerator/SetEnergyRange 40 70 # in keV
+/primaryGenerator/UseUserDefinedEnergy Resolution13a.root tally5
 
 /analysis/ntuple_filename vacuum.root
 /run/initialize
-/run/printProgress 200
-/run/beamOn 1000000
-
+/run/printProgress 1000
+/run/beamOn 100000
