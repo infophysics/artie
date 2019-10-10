@@ -1,4 +1,15 @@
+/*************************************************************************
+    > File Name: ArtieStyle.C
+    > Author: Jingbo Wang
+    > Mail: jiowang@ucdavis.edu 
+    > Created Time: Wed Oct  9 17:38:13 2019
+    > Note: one has to check the Parameters before running the code
+    > Currently the parameters are hard-coded, but will be moved to a
+    > seperate configuration file
+    > To run the macro:
+    > root 'ArtieAnalysis.C("argon.root", "vacuum.root")' (Replace the file names with your own paths)
 
+ ************************************************************************/
 
 #include "ArtieStyle.C"
 //#include "ArtieTree.h"
@@ -12,10 +23,13 @@ bool _UseTrueEnergy = false;
 bool _UseLogScale = true;
 double _T0Res = 125.0; //ns
 double _TDetRes = 1.0; //ns
-double _FlightPath = 71.9; //m
-double _Energy_min = 40.0; // keV
-double _Energy_max = 70.0; // keV
-TString _TimeSmearOption = "MC"; // "MC" or "Gaus"
+double _FlightPath = 74.0; //m
+double _Energy_min = 1.0; // keV
+double _Energy_max = 300.0; // keV
+double _Axial_density = 3.5; // atoms/barn for 168 cm liquid argon target
+// double _Axial_density = 0.009; // atoms/barn for 168 cm air
+TString _TimeSmearOption = "MCNP"; // "MCNP" or "Gaus"
+TString _Moderator_function_filename = "../data/resolution13a.root"; // MCNPNP simulation file where the beam energy and the moderator response function are saved. 
 TRandom3 _randgen;
 // will create a configuration file to store the parameters
 
@@ -24,10 +38,10 @@ TRandom3 _randgen;
 TH1D *hBeam_Energy = 0; 
 // time of flight
 TH1D *hTof_argon = 0;
-TH1D *hTof_vacuum = 0;
+TH1D *hTof_compensator = 0;
 // neutron energy
 TH1D *hEnergy_argon = 0;
-TH1D *hEnergy_vacuum = 0; 
+TH1D *hEnergy_compensator = 0; 
 TH1D *hTransmission = 0;
 TH1D *hCrossSection = 0;
 // moderator response function
@@ -45,7 +59,7 @@ TH2D* GetModeratorFunction(TString rootfile, TString histname);
 double GetTimeSmear(double e, TH2D* hist);
 
 ////////////////////////////////////  Main function ////////////////////////////////////
-void ArtieAnalysis(TString argonfile, TString vacuumfile){    
+void ArtieAnalysis(TString argonfile, TString compensatorfile){    
 	
 	// Set plot style
 	SetArtieStyle();
@@ -54,62 +68,62 @@ void ArtieAnalysis(TString argonfile, TString vacuumfile){
 	Init();
 	
 	// Get Moderator function
-  TFile *fModeratorFunc = new TFile("resolution13a.root");
+  TFile *fModeratorFunc = new TFile(_Moderator_function_filename);
   hModeratorFunction = (TH2D*)fModeratorFunc->Get("tally15");
 	
   // Load Root files
   ArtieTree targ(argonfile);
-  ArtieTree tvac(vacuumfile);
-  if (targ.fChain == 0 || tvac.fChain == 0) return;
+  ArtieTree tcomp(compensatorfile);
+  if (targ.fChain == 0 || tcomp.fChain == 0) return;
   Long64_t nentries_arg = targ.fChain->GetEntriesFast();
-  Long64_t nentries_vac = tvac.fChain->GetEntriesFast();
-  Long64_t nentries = TMath::Min(nentries_arg, nentries_vac);
+  Long64_t nentries_comp = tcomp.fChain->GetEntriesFast();
+  Long64_t nentries = TMath::Min(nentries_arg, nentries_comp);
   //nentries = 1000;
 
   // Loop over entries and fill histograms
   for (Long64_t jentry=0; jentry<nentries;jentry++) {
   	 if(jentry%10000==0) cout<<"Event "<<jentry<<" starts"<<endl;
      targ.LoadTree(jentry);
-     tvac.LoadTree(jentry);
+     tcomp.LoadTree(jentry);
      targ.fChain->GetEntry(jentry);
-     tvac.fChain->GetEntry(jentry);
+     tcomp.fChain->GetEntry(jentry);
      hBeam_Energy->Fill(targ.gen_energy*1.e6); // convert to eV
      if(_UseTrueEnergy) { 
        hEnergy_argon->Fill(targ.arrival_e*1000); // convert to keV
-       hEnergy_vacuum->Fill(tvac.arrival_e*1000); // convert to keV  	
+       hEnergy_compensator->Fill(tcomp.arrival_e*1000); // convert to keV  	
      }
      else {
      	 // get true time-of-flight
      	 double tof_arg = targ.arrival_time/1000; // ns -> us
-     	 double tof_vac = tvac.arrival_time/1000; // ns -> us
-     	 if(_TimeSmearOption == "MC") {
+     	 double tof_comp = tcomp.arrival_time/1000; // ns -> us
+     	 if(_TimeSmearOption == "MCNP") {
      	 	 // use true energy and true tof to determine the relative moderator smearing
      	   double tof_arg_smear = GetTimeSmear(targ.arrival_e, hModeratorFunction);
-     	   double tof_vac_smear = GetTimeSmear(tvac.arrival_e, hModeratorFunction);
+     	   double tof_comp_smear = GetTimeSmear(tcomp.arrival_e, hModeratorFunction);
      	 	 tof_arg = tof_arg*(1+tof_arg_smear);
-         tof_vac = tof_vac*(1+tof_vac_smear);
+         tof_comp = tof_comp*(1+tof_comp_smear);
      	 }
        else if(_TimeSmearOption == "Gaus") {
        	 // use Gaussian moderator response 
        	 double tof_arg_smear = _randgen.Gaus(0, _T0Res/1000/2.35); // FWHM -> sigma
-     	   double tof_vac_smear = _randgen.Gaus(0, _T0Res/1000/2.35); // FWHM -> sigma
+     	   double tof_comp_smear = _randgen.Gaus(0, _T0Res/1000/2.35); // FWHM -> sigma
      	   tof_arg += tof_arg_smear;
-         tof_vac += tof_vac_smear;
+         tof_comp += tof_comp_smear;
        }
      	 
      	 // add detector time resolution
      	 tof_arg += _randgen.Gaus(0, _TDetRes/1000);
-     	 tof_vac += _randgen.Gaus(0, _TDetRes/1000);
+     	 tof_comp += _randgen.Gaus(0, _TDetRes/1000);
      	 
      	 hTof_argon->Fill(tof_arg*1000); // ns
-     	 hTof_vacuum->Fill(tof_vac*1000); // ns
+     	 hTof_compensator->Fill(tof_comp*1000); // ns
      	 
      	 // get energy from TOF
      	 double energy_arg = GetEnergyFromTOF(tof_arg); // us -> keV
-     	 double energy_vac = GetEnergyFromTOF(tof_vac); // us -> keV
+     	 double energy_comp = GetEnergyFromTOF(tof_comp); // us -> keV
      	 
        hEnergy_argon->Fill(energy_arg); 
-       hEnergy_vacuum->Fill(energy_vac);
+       hEnergy_compensator->Fill(energy_comp);
      }
   }
   
@@ -121,20 +135,20 @@ void ArtieAnalysis(TString argonfile, TString vacuumfile){
     double ArgError = 0., VacError = 0.;
     double TransCoeff = 0., TransCoeffError = 0.;
     double Xsection = 0., XsectionError = 0.;
-    if(hEnergy_vacuum->GetBinContent(i+1)!=0) { 
+    if(hEnergy_compensator->GetBinContent(i+1)!=0) { 
     	// Entries in each energy bin
     	ArgCount = hEnergy_argon->GetBinContent(i+1);
-    	VacCount = hEnergy_vacuum->GetBinContent(i+1);
+    	VacCount = hEnergy_compensator->GetBinContent(i+1);
     	if(VacCount!=0 && ArgCount!=0) {
     	  // Transmission coefficient from energy 
     	  TransCoeff = ArgCount*1.0/VacCount;
     	  // Cross section from energy
-        Xsection = (-1./4.2)*TMath::Log(TransCoeff);
+        Xsection = (-1./_Axial_density)*TMath::Log(TransCoeff);
     	  // Uncertainty estimate
     	  ArgError = TMath::Sqrt(hEnergy_argon->GetBinContent(i+1))/ArgCount;
-        VacError = TMath::Sqrt(hEnergy_vacuum->GetBinContent(i+1))/VacCount;
+        VacError = TMath::Sqrt(hEnergy_compensator->GetBinContent(i+1))/VacCount;
     	  TransCoeffError = sqrt(pow(ArgError, 2) + pow(VacError, 2)); 
-        XsectionError = (1/4.2)*TransCoeffError;
+        XsectionError = (1/_Axial_density)*TransCoeffError;
       }
     }
     // Set Bin Content
@@ -196,10 +210,10 @@ void Init() {
   int ntofbins = (tofmax - tofmin)/100; // 10 ns per bin
   cout<<"tofmin, tofmax = "<<tofmin<<", "<<tofmax<<endl;
   
-  hTof_argon = new TH1D("hTof_argon", "Argon-fill: Time-of-Flight", ntofbins, tofmin, tofmax);
-  hTof_vacuum = new TH1D("hTof_vacuum", "Vacuum-fill: Time-of-Flight", ntofbins, tofmin, tofmax);
-  hEnergy_argon = new TH1D("hEnergy_argon", "Argon-fill: energy spectrum", nbins, emin, emax);
-  hEnergy_vacuum = new TH1D("hEnergy_vacuum", "Vacuum-fill: energy spectrum", nbins, emin, emax);
+  hTof_argon = new TH1D("hTof_argon", "Neutron Time-of-Flight", ntofbins, tofmin, tofmax);
+  hTof_compensator = new TH1D("hTof_compensator", "Neutron Time-of-Flight", ntofbins, tofmin, tofmax);
+  hEnergy_argon = new TH1D("hEnergy_argon", "Neutron Energy from TOF", nbins, emin, emax);
+  hEnergy_compensator = new TH1D("hEnergy_compensator", "Neutron Energy from TOF", nbins, emin, emax);
   hTransmission = new TH1D("hTransmission", "Transmission Coefficient", nbins, emin, emax);
   hCrossSection = new TH1D("hCrossSection", "Total cross-section", nbins, emin, emax);
   
@@ -232,6 +246,7 @@ void Plot() {
 	c[ir]->Update();
 	c[ir]->SetLogx();
 	c[ir]->SetLogy();
+	hBeam_Energy->SetTitle("Neutron beam energy (MCNPNP)");
 	hBeam_Energy->GetXaxis()->SetTitle("Energy [eV]");
   hBeam_Energy->GetYaxis()->SetTitle("Count [/bin]");
   hBeam_Energy->Draw("HIST");
@@ -239,52 +254,56 @@ void Plot() {
   
   ir++;
   c[ir] = new TCanvas(Form("c%d", ir), Form("c%d", ir), 20*ir, 20*ir, 800, 600);
-  c[ir]->cd();	          
-  hTof_vacuum->GetXaxis()->SetTitle("Time-of-Flight [ns]");
-  hTof_vacuum->GetYaxis()->SetTitle("Count [/10ns]");
-  hTof_vacuum->GetYaxis()->SetRangeUser(0,hEnergy_vacuum->GetMaximum()*1.6);
-  hTof_vacuum->SetLineColor(4);
-  hTof_vacuum->SetMarkerStyle(20);
-  hTof_vacuum->SetMarkerColor(4);    
-  hTof_vacuum->SetMinimum(0);
-  hTof_vacuum->Draw("PE");
+  c[ir]->cd();	   
+  //c[ir]->SetLogx();
+	c[ir]->SetLogy();     
+  hTof_compensator->GetXaxis()->SetTitle("Time-of-Flight [ns]");
+  hTof_compensator->GetYaxis()->SetTitle("Count [/10ns]");
+  //hTof_compensator->GetYaxis()->SetRangeUser(0,hEnergy_compensator->GetMaximum()*1.6);
+  hTof_compensator->SetLineColor(4);
+  hTof_compensator->SetMarkerStyle(20);
+  hTof_compensator->SetMarkerColor(4);    
+  //hTof_compensator->SetMinimum(0);
+  hTof_compensator->Draw("PE");
   hTof_argon->GetXaxis()->SetTitle("Time-of-Flight [ns]");
   hTof_argon->GetYaxis()->SetTitle("Count [/10ns]");
   hTof_argon->SetLineColor(2);
   hTof_argon->SetMarkerStyle(20);
   hTof_argon->SetMarkerColor(2);
   hTof_argon->Draw("PEsame");
-  hTof_vacuum->Write();
+  hTof_compensator->Write();
   hTof_argon->Write();
   
   TLegend *legend1 = new TLegend(0.55,0.7,0.85,0.85);
-  legend1->AddEntry(hEnergy_vacuum,"Vacuum-fill","l");
-  legend1->AddEntry(hEnergy_argon,"Argon-fill","l");
+  legend1->AddEntry(hEnergy_compensator,"Compensator","l");
+  legend1->AddEntry(hEnergy_argon,"LAr-fill","l");
   legend1->Draw("same");
 	
   ir++;
   c[ir] = new TCanvas(Form("c%d", ir), Form("c%d", ir), 20*ir, 20*ir, 800, 600);
-  c[ir]->cd();	          
-  hEnergy_vacuum->GetXaxis()->SetTitle("Energy [keV]");
-  hEnergy_vacuum->GetYaxis()->SetTitle("Count [/keV]");
-  hEnergy_vacuum->GetYaxis()->SetRangeUser(0,hEnergy_vacuum->GetMaximum()*1.6);
-  hEnergy_vacuum->SetLineColor(4);
-  hEnergy_vacuum->SetMarkerStyle(20);
-  hEnergy_vacuum->SetMarkerColor(4);    
-  hEnergy_vacuum->SetMinimum(0);
-  hEnergy_vacuum->Draw("PE");
+  c[ir]->cd();	 
+  //c[ir]->SetLogx();
+	c[ir]->SetLogy();         
+  hEnergy_compensator->GetXaxis()->SetTitle("Energy [keV]");
+  hEnergy_compensator->GetYaxis()->SetTitle("Count [/keV]");
+  //hEnergy_compensator->GetYaxis()->SetRangeUser(0,hEnergy_compensator->GetMaximum()*1.6);
+  hEnergy_compensator->SetLineColor(4);
+  hEnergy_compensator->SetMarkerStyle(20);
+  hEnergy_compensator->SetMarkerColor(4);    
+  //hEnergy_compensator->SetMinimum(0);
+  hEnergy_compensator->Draw("PE");
   hEnergy_argon->GetXaxis()->SetTitle("Energy [keV]");
   hEnergy_argon->GetYaxis()->SetTitle("Count [/keV]");
   hEnergy_argon->SetLineColor(2);
   hEnergy_argon->SetMarkerStyle(20);
   hEnergy_argon->SetMarkerColor(2);
   hEnergy_argon->Draw("PEsame");
-  hEnergy_vacuum->Write();
+  hEnergy_compensator->Write();
   hEnergy_argon->Write();
   
   TLegend *legend2 = new TLegend(0.55,0.7,0.85,0.85);
-  legend2->AddEntry(hEnergy_vacuum,"Vacuum-fill","l");
-  legend2->AddEntry(hEnergy_argon,"Argon-fill","l");
+  legend2->AddEntry(hEnergy_compensator,"Compensator","l");
+  legend2->AddEntry(hEnergy_argon,"LAr-fill","l");
   legend2->Draw("same");
   
   ir++;
