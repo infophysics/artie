@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(Artie)
 set(useROOT true) ###
 
+
 #----------------------------------------------------------------------------
 # Find Geant4 package, activating all available UI and Vis drivers by default
 # You can set WITH_GEANT4_UIVIS to OFF via the command line or ccmake/cmake-gui
@@ -12,6 +13,8 @@ set(useROOT true) ###
 option(WITH_GEANT4_UIVIS "Build example with Geant4 UI and Vis drivers" ON)
 if(WITH_GEANT4_UIVIS)
   find_package(Geant4 REQUIRED ui_all vis_all)
+  add_definitions(-DG4VIS_USE=1)
+  add_definitions(-DG4UI_USE=1)
 else()
   find_package(Geant4 REQUIRED)
 endif()
@@ -50,7 +53,7 @@ if(useROOT)
     set(CMAKE_EXE_LINKER_FLAGS ${ROOT_LD_FLAGS})
 endif(useROOT)
 ###
-target_link_libraries(Artie ${Geant4_LIBRARIES} )
+target_link_libraries(Artie ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we
