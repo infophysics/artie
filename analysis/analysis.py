@@ -180,18 +180,46 @@ class ArtieAnalysis:
             energy_all = self.artie_data[dataset].variables['gen_energy'][:max_events]
             energy_target = energy_all[self.artie_data[dataset].target_mask]
             if plot_type == 'all' or plot_type == 'both':
-                axs.hist(energy_all, bins=num_bins, histtype='step', label=dataset+'-produced', density=True)
+                axs.hist(
+                    energy_all, 
+                    bins=num_bins, 
+                    range=[energy_min, energy_max], 
+                    histtype='step', 
+                    label=dataset+'-produced', 
+                    density=True
+                )
             if plot_type == 'target' or plot_type == 'both':
-                axs.hist(energy_target, bins=num_bins, histtype='step', label=dataset+'-detected', density=True)
+                axs.hist(
+                    energy_target, 
+                    bins=num_bins, 
+                    range=[energy_min, energy_max], 
+                    histtype='step', 
+                    label=dataset+'-detected', 
+                    density=True
+                )
         else:
             for item in dataset:
                 self.check_for_dataset(item)
                 energy_all = self.artie_data[item].variables['gen_energy'][:max_events]
                 energy_target = energy_all[self.artie_data[item].target_mask]
                 if plot_type == 'all' or plot_type == 'both':
-                    axs.hist(energy_all, bins=num_bins, histtype='step', label=item+'-produced', density=True)
+                    axs.hist(
+                        energy_all, 
+                        bins=num_bins, 
+                        range=[energy_min, energy_max], 
+                        histtype='step', 
+                        label=item+'-produced', 
+                        density=True
+                    )
                 if plot_type == 'target' or plot_type == 'both':
-                    axs.hist(energy_target, bins=num_bins, histtype='step', label=item+'-detected', density=True)
+                    axs.hist(
+                        energy_target, 
+                        bins=num_bins, 
+                        range=[energy_min, energy_max], 
+                        histtype='step', 
+                        label=item+'-detected', 
+                        density=True
+                    )
         axs.set_xlabel(f"Energy (MeV) [{energy_min},{energy_max}]")
         axs.set_ylabel("Neutrons")
         axs.set_title(title)
@@ -220,8 +248,16 @@ class ArtieAnalysis:
             self.check_for_dataset(dataset)
             energy_all = self.artie_data[dataset].variables['gen_energy'][:max_events]
             energy_target = energy_all[self.artie_data[dataset].target_mask]
-            hall, edges = np.histogram(energy_all, bins=num_bins,range=[energy_min, energy_max])
-            hpss, edges = np.histogram(energy_target, bins=num_bins,range=[energy_min, energy_max])
+            hall, edges = np.histogram(
+                energy_all, 
+                bins=num_bins, 
+                range=[energy_min, energy_max]
+            )
+            hpss, edges = np.histogram(
+                energy_target, 
+                bins=num_bins, 
+                range=[energy_min, energy_max]
+            )
             cbins = (edges[1:] + edges[:-1])/2.0
             trans_ratio = np.zeros(cbins.size)
             trans_mask = (hall > 0)
@@ -233,8 +269,16 @@ class ArtieAnalysis:
                 self.check_for_dataset(item)
                 energy_all = self.artie_data[item].variables['gen_energy'][:max_events]
                 energy_target = energy_all[self.artie_data[item].target_mask]
-                hall, edges = np.histogram(energy_all, bins=num_bins,range=[energy_min, energy_max])
-                hpss, edges = np.histogram(energy_target, bins=num_bins,range=[energy_min, energy_max])
+                hall, edges = np.histogram(
+                    energy_all, 
+                    bins=num_bins,
+                    range=[energy_min, energy_max]
+                )
+                hpss, edges = np.histogram(
+                    energy_target, 
+                    bins=num_bins,
+                    range=[energy_min, energy_max]
+                )
                 cbins = (edges[1:] + edges[:-1])/2.0
                 trans_ratio = np.zeros(cbins.size)
                 trans_mask = (hall > 0)
@@ -268,7 +312,7 @@ class ArtieAnalysis:
             tof_target = tof_all[self.artie_data[dataset].target_mask]
             energy_target = energy_all[self.artie_data[dataset].target_mask]
             # generate fake tof to compare
-            tof_compare = np.linspace(min(tof_target),max(tof_target), num_bins)
+            tof_compare = np.linspace(min(tof_target), max(tof_target), num_bins)
             tof_indices = np.digitize(tof_target, tof_compare)
             energy_target_bins = [[] for ii in range(num_bins)]
             for ii in range(len(energy_target)):
@@ -291,7 +335,7 @@ class ArtieAnalysis:
                 tof_target = tof_all[self.artie_data[item].target_mask]
                 energy_target = energy_all[self.artie_data[item].target_mask]
                 # generate fake tof to compare
-                tof_compare = np.linspace(min(tof_target),max(tof_target), num_bins)
+                tof_compare = np.linspace(min(tof_target), max(tof_target), num_bins)
                 tof_indices = np.digitize(tof_target, tof_compare)
                 energy_target_bins = [[] for ii in range(num_bins)]
                 for ii in range(len(energy_target)):
@@ -387,15 +431,25 @@ if __name__ == "__main__":
         input_file="../build/argon.root",
         variables=simulation_variables,
     )
+    ideal_data = ArtieData(
+        input_file="../build/ideal.root",
+        variables=simulation_variables
+    )
+    short_data = ArtieData(
+        input_file="../build/short.root",
+        variables=simulation_variables
+    )
     data_dict = {
         'vacuum':   vacuum_data,
         'argon':    argon_data,
+        'ideal':    ideal_data,
+        'short':    short_data,
     }
 
     analysis = ArtieAnalysis(data_dict)
-
+    
     analysis.plot_energy_spectrum(
-        dataset=['vacuum','argon'],
+        dataset=['vacuum','argon','ideal'],
         plot_type='target',
         save='example_energy_spectrum'
     )
